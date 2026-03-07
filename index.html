@@ -154,9 +154,9 @@
     <button class="logout-btn" onclick="logout()">Logout / Switch User</button>
   </div>
 
- <script>
+<script>
     // ⚠️ CONFIGURATION
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec'; // Ensure this ends in /exec
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec'; 
     const MASTER_PASSWORD = 'coffee-rocks'; 
 
     let currentUser = "";
@@ -164,12 +164,10 @@
     let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
     let totalS = 0, timerInt = null;
 
-    // 1. THE LOGIN GATEKEEPER
+    // 1. LOGIN & AUTH
     function checkLogin() {
-      console.log("Attempting login...");
       const u = document.getElementById('usernameInput').value;
       const p = document.getElementById('passwordInput').value;
-
       if (p === MASTER_PASSWORD && u.trim() !== "") {
         currentUser = u;
         localStorage.setItem('coffeeUser', u);
@@ -177,97 +175,110 @@
         initApp();
       } else {
         document.getElementById('loginError').innerText = "Wrong password or name.";
-        console.warn("Login failed: Incorrect credentials.");
       }
     }
 
-    // 2. THE APP INITIALIZER
     function initApp() {
-      console.log("Initializing App for: " + currentUser);
       document.getElementById('loginPage').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
       refreshAllData();
     }
 
-    // 3. ON LOAD LOGIC
     window.onload = function() {
-      console.log("Page loaded. Checking for saved session...");
       const u = localStorage.getItem('coffeeUser');
       const p = localStorage.getItem('coffeePass');
-      
-      // Only auto-login if the password STILL matches the code
-      if (u && p === MASTER_PASSWORD) { 
-        console.log("Saved session found for: " + u);
-        currentUser = u; 
-        initApp(); 
-      } else {
-        console.log("No valid session found. Showing login screen.");
-        localStorage.clear(); // Clear any old/broken keys
-        document.getElementById('loginPage').style.display = 'flex';
-      }
+      if (u && p === MASTER_PASSWORD) { currentUser = u; initApp(); }
     };
 
     function logout() {
-      console.log("Logging out...");
       localStorage.clear();
       location.reload();
     }
 
-    // 4. DATA REFRESH (The Waiter)
+    // 2. DATA FETCHING (The Waiter)
     function refreshAllData() {
       if (!currentUser) return;
       
-      // 1. Fetch Recipes
+      // Fetch Recipes
       fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`).then(res => res.json()).then(data => {
         allRecipes = data.data || [];
         renderRecipeList();
       });
 
-      // 2. Fetch Beans
+      // Fetch Beans
       fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`).then(res => res.json()).then(data => {
         allBeans = data.data || [];
         renderBeanList();
       });
 
-      // 3. Fetch Feed (THE FIX)
+      // Fetch Feed
       fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => {
         const brews = data.data || [];
         renderFeed(brews);
       });
     }
 
+    // 3. THE PAINTERS (The missing functions!)
+    function renderRecipeList() {
+      const d = document.getElementById('activeRecipeDropdown'); 
+      const l = document.getElementById('recipeListContainer');
+      d.innerHTML = '<option value="">-- Choose Recipe --</option>'; 
+      l.innerHTML = '';
+      
+      if(allRecipes.length === 0) l.innerHTML = '<p style="text-align:center; color:#999;">No recipes found.</p>';
+      
+      allRecipes.slice().reverse().forEach((row, i) => {
+        const originalIdx = allRecipes.length - 1 - i;
+        d.innerHTML += `<option value="${originalIdx}">${row[1]}</option>`;
+        l.innerHTML += `
+          <div class="feed-card">
+            <div class="feed-title">${row[1]}</div>
+            <span class="data-label">Method</span><div class="detail-text">${row[2]} (${row[3]}g)</div>
+            <span class="data-label">Steps</span><div class="detail-text">${row[4]}s | ${row[5]}s | ${row[6]}s</div>
+          </div>`;
+      });
+    }
+
+    function renderBeanList() {
+      const bd = document.getElementById('brewBeanDropdown'); 
+      const bl = document.getElementById('pantryListContainer');
+      bd.innerHTML = '<option value="">-- Choose Bean --</option>'; 
+      bl.innerHTML = '';
+      
+      if(allBeans.length === 0) bl.innerHTML = '<p style="text-align:center; color:#999;">Pantry is empty.</p>';
+
+      allBeans.slice().reverse().forEach(row => {
+        bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
+        bl.innerHTML += `
+          <div class="feed-card">
+            <div class="feed-title">${row[1]}</div>
+            <span class="data-label">Roaster</span><div class="detail-text">${row[2]}</div>
+            <span class="data-label">Roast Date</span><div class="detail-text">${new Date(row[3]).toLocaleDateString()}</div>
+          </div>`;
+      });
+    }
+
     function renderFeed(brews) {
       const fc = document.getElementById('brewFeedContainer');
       fc.innerHTML = '<h3 style="text-align:center; color:#5c4033;">Your Brew History</h3>';
-      
-      if (brews.length === 0) {
-        fc.innerHTML += '<p style="text-align:center; color:#999; margin-top:20px;">No brew history yet for ' + currentUser + '.</p>';
-        return;
-      }
-
-      const tlWrap = document.createElement('div');
-      tlWrap.className = 'timeline';
-      
-      // Flip the list so the newest brew is at the top
+      if (brews.length === 0) { fc.innerHTML += '<p style="text-align:center; color:#999; margin-top:20px;">No history.</p>'; return; }
+      const tlWrap = document.createElement('div'); tlWrap.className = 'timeline';
       brews.slice().reverse().forEach(row => {
         const dt = new Date(row[0]);
-        const dateStr = dt.toLocaleDateString() + " " + dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        const stars = "⭐".repeat(row[3]);
-
         tlWrap.innerHTML += `
           <div class="timeline-item">
             <div class="timeline-card">
-              <div class="timeline-date">${dateStr}</div>
+              <div class="timeline-date">${dt.toLocaleDateString()} ${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
               <div class="feed-title">${row[2]}</div>
               <div class="detail-text">☕ Bean: ${row[1]}</div>
-              <div class="detail-text">${stars}</div>
+              <div class="detail-text">${"⭐".repeat(row[3])}</div>
             </div>
           </div>`;
       });
       fc.appendChild(tlWrap);
     }
 
-    // UI LOGIC
+    // 4. UI & TIMER LOGIC
     function switchPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-btn'));
@@ -279,7 +290,6 @@
       const m = document.getElementById('helpModal'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
     }
 
-    // TIMER LOGIC
     function updateTimerSettings() {
       const idx = document.getElementById('activeRecipeDropdown').value; if (idx === "") return;
       const r = allRecipes[idx]; const s1 = parseInt(r[4])||0; const s2 = parseInt(r[5])||0; const s3 = parseInt(r[6])||0;
@@ -291,36 +301,19 @@
     function formatTime(s) { const m = Math.floor(s/60); const sc = s%60; return m+":"+(sc<10?"0":"")+sc; }
 
     function startTimer() {
-      if (timerInt || endPhase1 === 0) return; 
-      document.getElementById('startBtn').disabled = true;
-
+      if (timerInt || endPhase1 === 0) return; document.getElementById('startBtn').disabled = true;
       timerInt = setInterval(() => {
-        totalS++;
-        
-        // UPGRADED FORMAT: "Current / Total"
-        const currentTime = formatTime(totalS);
-        const totalMaxTime = formatTime(endPhase3);
-        document.getElementById('totalTimeDisplay').innerText = `Total: ${currentTime} / ${totalMaxTime}`;
-
-        if (totalS <= endPhase1) {
-          document.getElementById('phaseNameDisplay').innerText = "Phase 1";
-          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1 - totalS);
-        } else if (totalS <= endPhase2) {
-          document.getElementById('phaseNameDisplay').innerText = "Phase 2";
-          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2 - totalS);
-        } else if (totalS <= endPhase3) {
-          document.getElementById('phaseNameDisplay').innerText = "Phase 3";
-          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3 - totalS);
-        } else {
-          document.getElementById('phaseNameDisplay').innerText = "Finished";
-          document.getElementById('phaseTimeDisplay').innerText = "0:00";
-          stopTimer();
-        }
+        totalS++; 
+        document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)} / ${formatTime(endPhase3)}`;
+        if (totalS <= endPhase1) { document.getElementById('phaseNameDisplay').innerText = "Phase 1"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1-totalS); }
+        else if (totalS <= endPhase2) { document.getElementById('phaseNameDisplay').innerText = "Phase 2"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2-totalS); }
+        else if (totalS <= endPhase3) { document.getElementById('phaseNameDisplay').innerText = "Phase 3"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3-totalS); }
+        else { document.getElementById('phaseNameDisplay').innerText = "Finished"; stopTimer(); }
       }, 1000);
     }
     function stopTimer() { clearInterval(timerInt); timerInt = null; document.getElementById('startBtn').disabled = false; }
 
-    // DATA SAVING
+    // 5. DATA SAVING
     function logBrew() {
       const s = document.getElementById('brewStatus'); s.innerText = 'Saving...';
       const r = document.getElementById('activeRecipeDropdown');
@@ -339,6 +332,6 @@
       const payload = { action: 'addBean', user: currentUser, payload: { beanName: document.getElementById('beanName').value, roaster: document.getElementById('roaster').value, roastDate: document.getElementById('roastDate').value } };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; refreshAllData(); }).catch(() => s.innerText = '❌ Error.');
     }
-  </script>
+</script>
 </body>
 </html>
