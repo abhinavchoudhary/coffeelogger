@@ -6,6 +6,7 @@
   <title>My Private Brew</title>
   <link rel="icon" href="https://fav.farm/🫘" />
   <style>
+    /* Helvetica Theme & Clean UI */
     body { font-family: "Helvetica Neue", Helvetica, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; color: #333; }
     h1 { text-align: center; color: #5c4033; font-weight: bold; margin-bottom: 20px; }
     
@@ -18,28 +19,26 @@
     .nav-btn { flex: 1; min-width: 80px; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; font-size: 14px; }
     .nav-btn.active-btn { background: #5c4033; color: white; }
 
-    /* MODAL */
+    /* MODALS & CARDS */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 15px; }
-
-    /* GENERAL UI */
     .page { display: none; } .page.active { display: block; }
     .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
     input, select { display: block; width: 100%; margin: 10px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; }
     button.action-btn { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; font-family: inherit; }
     button.action-btn.alt { background: #8d6e63; }
     
-    /* TIMER */
+    /* TIMER UI */
     .timer-container { background: #f9f6f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0d4c8; text-align: center; }
     .phase-name { font-size: 18px; color: #e65100; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
     .phase-timer { font-size: 60px; font-weight: bold; color: #3e2723; line-height: 1; }
     .total-timer { font-size: 14px; color: #888; margin-top: 10px; font-weight: bold; }
 
-    /* FEED & TIMELINE */
+    /* TIMELINE & LISTS */
     .timeline { border-left: 3px solid #e0d4c8; padding-left: 25px; margin-left: 15px; position: relative; }
     .timeline-item { position: relative; margin-bottom: 25px; }
     .timeline-item::before { content: ''; position: absolute; left: -34px; top: 0; width: 14px; height: 14px; background: #5c4033; border-radius: 50%; border: 3px solid #faf8f5; }
-    .timeline-card, .feed-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .timeline-card, .feed-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 15px; }
     .timeline-date { font-weight: bold; color: #8d6e63; font-size: 12px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; text-transform: uppercase; }
     .feed-title { font-weight: bold; font-size: 17px; color: #3e2723; margin-bottom: 5px; }
     .data-label { font-weight: bold; color: #8d6e63; font-size: 10px; text-transform: uppercase; margin-top: 8px; display: block; }
@@ -133,7 +132,7 @@
   </div>
 
   <script>
-    // ⚠️ CONFIGURATION
+    // ⚠️ CONFIGURATION - Update these two lines!
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
     const MASTER_PASSWORD = 'coffee-rocks'; 
 
@@ -142,6 +141,7 @@
     let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
     let totalS = 0, timerInt = null;
 
+    // LOGIN LOGIC
     function checkLogin() {
       const u = document.getElementById('usernameInput').value;
       const p = document.getElementById('passwordInput').value;
@@ -158,7 +158,10 @@
     window.onload = function() {
       const u = localStorage.getItem('coffeeUser');
       const p = localStorage.getItem('coffeePass');
-      if (u && p === MASTER_PASSWORD) { currentUser = u; initApp(); }
+      if (u && p === MASTER_PASSWORD) { 
+        currentUser = u; 
+        initApp(); 
+      }
     };
 
     function initApp() {
@@ -167,35 +170,41 @@
       refreshAllData();
     }
 
+    // DATA FETCHING & RENDERING
     function refreshAllData() {
-      // Fetch Recipes
+      // 1. Fetch Recipes
       fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`).then(res => res.json()).then(data => {
         allRecipes = data.data;
-        const d = document.getElementById('activeRecipeDropdown'); const l = document.getElementById('recipeListContainer');
-        d.innerHTML = '<option value="">-- Choose Recipe --</option>'; l.innerHTML = '<h3 style="text-align:center;">Your Recipes</h3>';
+        const d = document.getElementById('activeRecipeDropdown'); 
+        const l = document.getElementById('recipeListContainer');
+        d.innerHTML = '<option value="">-- Choose Recipe --</option>'; 
+        l.innerHTML = '<h3 style="text-align:center;">Your Recipes</h3>';
         allRecipes.slice().reverse().forEach((row, i) => {
           d.innerHTML += `<option value="${allRecipes.length - 1 - i}">${row[1]}</option>`;
           l.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]} | ${row[3]}g</div><div class="detail-text">${row[4]}s | ${row[5]}s | ${row[6]}s</div></div>`;
         });
       });
 
-      // Fetch Beans
+      // 2. Fetch Beans
       fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`).then(res => res.json()).then(data => {
         allBeans = data.data;
-        const bd = document.getElementById('brewBeanDropdown'); const bl = document.getElementById('pantryListContainer');
-        bd.innerHTML = '<option value="">-- Choose Bean --</option>'; bl.innerHTML = '<h3 style="text-align:center;">Your Pantry</h3>';
+        const bd = document.getElementById('brewBeanDropdown'); 
+        const bl = document.getElementById('pantryListContainer');
+        bd.innerHTML = '<option value="">-- Choose Bean --</option>'; 
+        bl.innerHTML = '<h3 style="text-align:center;">Your Pantry</h3>';
         allBeans.slice().reverse().forEach(row => {
           bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
           bl.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]}</div><div class="detail-text">Roasted: ${new Date(row[3]).toLocaleDateString()}</div></div>`;
         });
       });
 
-      // Fetch Feed
+      // 3. Fetch Feed (Timeline)
       fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => {
         const fc = document.getElementById('brewFeedContainer');
         fc.innerHTML = '<h3 style="text-align:center;">Your Brew History</h3>';
-        if (data.data.length === 0) { fc.innerHTML += '<p style="text-align:center;">No history.</p>'; return; }
-        const tlWrap = document.createElement('div'); tlWrap.className = 'timeline';
+        if (!data.data || data.data.length === 0) { fc.innerHTML += '<p style="text-align:center;">No history.</p>'; return; }
+        const tlWrap = document.createElement('div'); 
+        tlWrap.className = 'timeline';
         data.data.slice().reverse().forEach(row => {
           const dt = new Date(row[0]);
           tlWrap.innerHTML += `<div class="timeline-item"><div class="timeline-card"><div class="timeline-date">${dt.toLocaleDateString()} ${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div><div class="feed-title">${row[2]}</div><div class="detail-text">☕ ${row[1]}</div><div class="detail-text">${"⭐".repeat(row[3])}</div></div></div>`;
@@ -204,6 +213,7 @@
       });
     }
 
+    // UI & TAB LOGIC
     function switchPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-btn'));
@@ -212,22 +222,68 @@
     }
 
     function toggleHelp() {
-      const m = document.getElementById('helpModal'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+      const m = document.getElementById('helpModal'); 
+      m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
     }
 
+    // TIMER LOGIC
     function updateTimerSettings() {
       const idx = document.getElementById('activeRecipeDropdown').value; if (idx === "") return;
-      const r = allRecipes[idx]; const s1 = parseInt(r[4])||0; const s2 = parseInt(r[5])||0; const s3 = parseInt(r[6])||0;
+      const r = allRecipes[idx]; 
+      const s1 = parseInt(r[4])||0; const s2 = parseInt(r[5])||0; const s3 = parseInt(r[6])||0;
       endPhase1 = s1; endPhase2 = s1+s2; endPhase3 = s1+s2+s3;
-      document.getElementById('phaseNameDisplay').innerText = "Ready"; document.getElementById('phaseTimeDisplay').innerText = formatTime(s1);
+      document.getElementById('phaseNameDisplay').innerText = "Ready"; 
+      document.getElementById('phaseTimeDisplay').innerText = formatTime(s1);
     }
 
     function formatTime(s) { const m = Math.floor(s/60); const sc = s%60; return m+":"+(sc<10?"0":"")+sc; }
 
     function startTimer() {
-      if (timerInt || endPhase1 === 0) return; document.getElementById('startBtn').disabled = true;
+      if (timerInt || endPhase1 === 0) return; 
+      document.getElementById('startBtn').disabled = true;
       timerInt = setInterval(() => {
-        totalS++; document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)}`;
-        if (totalS <= endPhase1) { document.getElementById('phaseNameDisplay').innerText = "Phase 1"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1-totalS); }
-        else if (totalS <= endPhase2) { document.getElementById('phaseNameDisplay').innerText = "Phase 2"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2-totalS); }
-        else if (totalS <= endPhase3) { document.getElementById('phaseNameDisplay').innerText = "Phase 3"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3-totalS); }
+        totalS++; 
+        document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)}`;
+        if (totalS <= endPhase1) { 
+            document.getElementById('phaseNameDisplay').innerText = "Phase 1"; 
+            document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1-totalS); 
+        }
+        else if (totalS <= endPhase2) { 
+            document.getElementById('phaseNameDisplay').innerText = "Phase 2"; 
+            document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2-totalS); 
+        }
+        else if (totalS <= endPhase3) { 
+            document.getElementById('phaseNameDisplay').innerText = "Phase 3"; 
+            document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3-totalS); 
+        }
+        else { 
+            document.getElementById('phaseNameDisplay').innerText = "Finished"; 
+            stopTimer(); 
+        }
+      }, 1000);
+    }
+
+    function stopTimer() { clearInterval(timerInt); timerInt = null; document.getElementById('startBtn').disabled = false; }
+
+    // POSTING DATA
+    function logBrew() {
+      const s = document.getElementById('brewStatus'); s.innerText = 'Saving...';
+      const r = document.getElementById('activeRecipeDropdown');
+      const payload = { action: 'logBrew', user: currentUser, payload: { beanName: document.getElementById('brewBeanDropdown').value, recipeName: r.options[r.selectedIndex].text, rating: document.getElementById('brewRating').value } };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; refreshAllData(); }).catch(() => s.innerText = '❌ Error.');
+    }
+
+    function saveRecipe() {
+      const s = document.getElementById('recipeStatus'); s.innerText = 'Saving...';
+      const payload = { action: 'addRecipe', user: currentUser, payload: { recipeName: document.getElementById('recipeName').value, method: document.getElementById('recipeMethod').value, coffeeGrams: document.getElementById('coffeeGrams').value, step1: document.getElementById('s1').value, step2: document.getElementById('s2').value, step3: document.getElementById('s3').value } };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; refreshAllData(); }).catch(() => s.innerText = '❌ Error.');
+    }
+
+    function sendBeanData() {
+      const s = document.getElementById('beanStatus'); s.innerText = 'Saving...';
+      const payload = { action: 'addBean', user: currentUser, payload: { beanName: document.getElementById('beanName').value, roaster: document.getElementById('roaster').value, roastDate: document.getElementById('roastDate').value } };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; refreshAllData(); }).catch(() => s.innerText = '❌ Error.');
+    }
+  </script>
+</body>
+</html>
