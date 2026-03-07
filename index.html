@@ -6,11 +6,21 @@
   <title>Coffee Tracker & Timer</title>
   <style>
     body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
     h1 { text-align: center; color: #5c4033; }
+    
+    /* --- NEW: NAVIGATION BAR STYLES --- */
+    .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .nav-btn { flex: 1; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; }
+    .nav-btn:hover { background: #d0c0b0; }
+    
+    /* --- NEW: PAGE HIDING LOGIC --- */
+    .page { display: none; } /* This hides all pages by default */
+    .page.active { display: block; } /* This shows the page with the 'active' class */
+
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
     input, select { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
-    button { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
-    button.alt-btn { background: #8d6e63; }
+    button.action-btn { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+    button.action-btn.alt { background: #8d6e63; }
     .timer-display { font-size: 60px; font-weight: bold; text-align: center; color: #3e2723; margin: 10px 0; }
     .phase-display { font-size: 20px; text-align: center; color: #e65100; font-weight: bold; margin-bottom: 20px; min-height: 24px;}
     .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
@@ -21,80 +31,105 @@
 
   <h1>☕ Coffee Hub</h1>
 
-  <div class="card">
-    <h2>1. Create Recipe</h2>
-    <input type="text" id="recipeName" placeholder="Recipe Name (e.g., My Morning V60)">
-    <select id="recipeMethod">
-      <option value="V60">V60</option>
-      <option value="AeroPress">AeroPress</option>
-      <option value="Inverted AeroPress">Inverted AeroPress</option>
-    </select>
-    <input type="number" id="coffeeGrams" placeholder="Coffee (grams)">
-    
-    <div class="row">
-      <input type="number" id="step1Time" placeholder="Step 1 (sec)">
-      <input type="number" id="step2Time" placeholder="Step 2 (sec)">
-      <input type="number" id="step3Time" placeholder="Step 3 (sec)">
-    </div>
-    
-    <button class="alt-btn" onclick="saveRecipe()">Save Recipe</button>
-    <p class="status" id="recipeStatus"></p>
+  <div class="nav-bar">
+    <button class="nav-btn" onclick="switchPage('brewPage')">Brew Station</button>
+    <button class="nav-btn" onclick="switchPage('recipePage')">Recipes</button>
+    <button class="nav-btn" onclick="switchPage('pantryPage')">Pantry</button>
   </div>
 
-  <div class="card">
-    <h2>2. Brew Station</h2>
-    
-    <label>Select Recipe</label>
-    <select id="activeRecipeDropdown" onchange="updateTimerSettings()">
-      <option value="">Loading recipes...</option>
-    </select>
-    
-    <div class="timer-display" id="timeDisplay">0:00</div>
-    <div class="phase-display" id="phaseDisplay">Select a recipe above</div>
-    
-    <button onclick="startTimer()">▶ Start Timer</button>
-    <button class="alt-btn" onclick="stopTimer()">⏹ Stop Timer</button>
+  <div id="brewPage" class="page active">
+    <div class="card">
+      <h2>Brew Station</h2>
+      <label>Select Recipe</label>
+      <select id="activeRecipeDropdown" onchange="updateTimerSettings()">
+        <option value="">Loading recipes...</option>
+      </select>
+      
+      <div class="timer-display" id="timeDisplay">0:00</div>
+      <div class="phase-display" id="phaseDisplay">Select a recipe above</div>
+      
+      <button class="action-btn" onclick="startTimer()">▶ Start Timer</button>
+      <button class="action-btn alt" onclick="stopTimer()">⏹ Stop Timer</button>
 
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-    
-    <h3>Log This Brew</h3>
-    <input type="text" id="brewBean" placeholder="Bean Used (e.g., Yirgacheffe)">
-    <input type="number" id="rating" placeholder="Rating (1-5 Stars)">
-    <button onclick="logBrew()">Save Brew</button>
-    <p class="status" id="brewStatus"></p>
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+      
+      <h3>Log This Brew</h3>
+      <input type="text" id="brewBean" placeholder="Bean Used (e.g., Yirgacheffe)">
+      <input type="number" id="rating" placeholder="Rating (1-5 Stars)">
+      <button class="action-btn" onclick="logBrew()">Save Brew</button>
+      <p class="status" id="brewStatus"></p>
+    </div>
+  </div>
+
+  <div id="recipePage" class="page">
+    <div class="card">
+      <h2>Create Recipe</h2>
+      <input type="text" id="recipeName" placeholder="Recipe Name (e.g., My Morning V60)">
+      <select id="recipeMethod">
+        <option value="V60">V60</option>
+        <option value="AeroPress">AeroPress</option>
+        <option value="Inverted AeroPress">Inverted AeroPress</option>
+      </select>
+      <input type="number" id="coffeeGrams" placeholder="Coffee (grams)">
+      
+      <div class="row">
+        <input type="number" id="step1Time" placeholder="Step 1 (sec)">
+        <input type="number" id="step2Time" placeholder="Step 2 (sec)">
+        <input type="number" id="step3Time" placeholder="Step 3 (sec)">
+      </div>
+      
+      <button class="action-btn alt" onclick="saveRecipe()">Save Recipe</button>
+      <p class="status" id="recipeStatus"></p>
+    </div>
+  </div>
+
+  <div id="pantryPage" class="page">
+    <div class="card">
+      <h2>Add New Bean</h2>
+      <input type="text" id="beanName" placeholder="Bean Name">
+      <input type="text" id="roaster" placeholder="Roaster">
+      <input type="date" id="roastDate">
+      <button class="action-btn alt" onclick="sendBeanData()">Save Bean</button>
+      <p class="status" id="beanStatus"></p>
+    </div>
   </div>
 
   <script>
+    // ⚠️ PASTE YOUR EXACT SAME SCRIPT URL HERE ⚠️
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
 
-    // --- GLOBAL VARIABLES (Our Chalkboard) ---
-    let allRecipes = []; 
-    let activeStep1 = 0;
-    let activeStep2 = 0;
-    let activeStep3 = 0;
+    // --- NEW: TAB NAVIGATION LOGIC ---
+    function switchPage(targetPageId) {
+      // 1. Hide all pages by removing the 'active' class
+      const allPages = document.querySelectorAll('.page');
+      allPages.forEach(page => {
+        page.classList.remove('active');
+      });
 
-    // --- NEW: FETCH RECIPES ON PAGE LOAD ---
-    // This runs the moment your website opens
+      // 2. Show the specific page we clicked on
+      document.getElementById(targetPageId).classList.add('active');
+    }
+
+    // --- GLOBAL VARIABLES & DATA FETCHING ---
+    let allRecipes = []; 
+    let activeStep1 = 0, activeStep2 = 0, activeStep3 = 0;
+
     window.onload = function() {
-      // Adding "?action=getRecipes" tells our doGet function exactly what we want
       fetch(SCRIPT_URL + "?action=getRecipes")
         .then(res => res.json())
         .then(data => {
-          allRecipes = data.data; // Save the raw Google Sheet rows into our global array
+          allRecipes = data.data; 
           populateDropdown();
         });
     };
 
     function populateDropdown() {
       const dropdown = document.getElementById('activeRecipeDropdown');
-      dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; // Clear loading text
-      
-      // Loop through every row from the spreadsheet
+      dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; 
       allRecipes.forEach((row, index) => {
-        const recipeName = row[1]; // Column B is the Recipe Name
         const option = document.createElement('option');
-        option.value = index; // We use the row index as the value so we can look it up later
-        option.innerText = recipeName;
+        option.value = index; 
+        option.innerText = row[1]; // Recipe Name
         dropdown.appendChild(option);
       });
     }
@@ -102,17 +137,14 @@
     function updateTimerSettings() {
       const selectedIndex = document.getElementById('activeRecipeDropdown').value;
       if (selectedIndex === "") return;
-
       const selectedRow = allRecipes[selectedIndex];
-      // Map the spreadsheet columns to our variables
-      activeStep1 = parseInt(selectedRow[4]); // Column E
-      activeStep2 = parseInt(selectedRow[5]); // Column F
-      activeStep3 = parseInt(selectedRow[6]); // Column G
-      
+      activeStep1 = parseInt(selectedRow[4]); 
+      activeStep2 = parseInt(selectedRow[5]); 
+      activeStep3 = parseInt(selectedRow[6]); 
       document.getElementById('phaseDisplay').innerText = `Loaded: ${selectedRow[1]} (${selectedRow[3]}g)`;
     }
 
-    // --- DYNAMIC TIMER LOGIC ---
+    // --- TIMER LOGIC ---
     let totalSeconds = 0;
     let timerInterval = null;
 
@@ -124,16 +156,12 @@
 
     function startTimer() {
       if (timerInterval) return; 
-      if (activeStep1 === 0) {
-        alert("Please select a recipe first!");
-        return;
-      }
+      if (activeStep1 === 0) { alert("Please select a recipe first!"); return; }
 
       timerInterval = setInterval(function() {
         totalSeconds++;
         document.getElementById('timeDisplay').innerText = formatTime(totalSeconds);
 
-        // The DYNAMIC Relay Race
         if (totalSeconds <= activeStep1) {
           document.getElementById('phaseDisplay').innerText = `Phase 1 (until ${activeStep1}s)`;
         } else if (totalSeconds <= activeStep2) {
@@ -142,7 +170,7 @@
           document.getElementById('phaseDisplay').innerText = `Phase 3 (until ${activeStep3}s)`;
         } else {
           document.getElementById('phaseDisplay').innerText = "Brew Finished!";
-          stopTimer(); // Auto-stop when Step 3 ends!
+          stopTimer(); 
         }
       }, 1000);
     }
@@ -152,7 +180,7 @@
       timerInterval = null; 
     }
 
-    // --- DATABASE LOGIC ---
+    // --- DATABASE POST LOGIC (Upgraded Courier) ---
     function saveRecipe() {
       const status = document.getElementById('recipeStatus');
       status.innerText = 'Saving...';
@@ -169,31 +197,46 @@
       };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
         .then(res => res.json())
-        .then(() => {
-          status.innerText = '✅ Recipe saved! Refresh page to see it in the dropdown.';
-        })
-        .catch(() => status.innerText = '❌ Error saving recipe.');
+        .then(data => {
+          if (data.status === 'success') {
+            status.innerText = '✅ Recipe saved! Refresh page to see it.';
+          } else { status.innerText = '❌ Server said: ' + data.message; }
+        }).catch(() => status.innerText = '❌ Network error.');
     }
 
     function logBrew() {
       const status = document.getElementById('brewStatus');
       status.innerText = 'Saving brew...';
-      
-      // We have to grab the actual name of the recipe from the dropdown text
       const dropdown = document.getElementById('activeRecipeDropdown');
       const recipeNameText = dropdown.options[dropdown.selectedIndex].text;
-
       const payload = {
         action: 'logBrew',
         payload: {
           beanName: document.getElementById('brewBean').value,
-          recipeName: recipeNameText, // Dynamically pulled from dropdown
+          recipeName: recipeNameText, 
           rating: document.getElementById('rating').value
         }
       };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
         .then(res => res.json())
         .then(() => status.innerText = '✅ Brew Logged!')
+        .catch(() => status.innerText = '❌ Error.');
+    }
+
+    function sendBeanData() {
+      const status = document.getElementById('beanStatus');
+      status.innerText = 'Saving...';
+      const payload = {
+        action: 'addBean',
+        payload: {
+          beanName: document.getElementById('beanName').value,
+          roaster: document.getElementById('roaster').value,
+          roastDate: document.getElementById('roastDate').value
+        }
+      };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(() => status.innerText = '✅ Bean saved!')
         .catch(() => status.innerText = '❌ Error.');
     }
   </script>
