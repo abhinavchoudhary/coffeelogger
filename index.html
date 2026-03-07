@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coffee Tracker & Timer</title>
+  <style>
+    /* THE PAINT (CSS) */
+    body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    input { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+    button { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #3e2723; }
+    #statusMessage { text-align: center; margin-top: 15px; color: #5c4033; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>☕ My Coffee Pantry</h1>
+
+  <div class="card">
+    <h2>Add New Bean</h2>
+    
+    <label for="beanName">Bean Name</label>
+    <input type="text" id="beanName" placeholder="e.g., Yirgacheffe">
+    
+    <label for="roaster">Roaster</label>
+    <input type="text" id="roaster" placeholder="e.g., Onyx Coffee Lab">
+    
+    <label for="roastDate">Roast Date</label>
+    <input type="date" id="roastDate">
+    
+    <button onclick="sendBeanData()">Save Bean to Sheet</button>
+    <p id="statusMessage"></p>
+  </div>
+
+  <script>
+    // ⚠️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT URL ⚠️
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
+
+    function sendBeanData() {
+      const statusText = document.getElementById('statusMessage');
+      statusText.innerText = 'Sending to your spreadsheet...';
+
+      // 1. Gather the data from the input boxes
+      const name = document.getElementById('beanName').value;
+      const roasterName = document.getElementById('roaster').value;
+      const date = document.getElementById('roastDate').value;
+
+      // 2. Build the JSON Payload (The exact format our Back-End expects)
+      const dataPayload = {
+        action: 'addBean',
+        payload: {
+          beanName: name,
+          roaster: roasterName,
+          roastDate: date
+        }
+      };
+
+      // 3. The Fetch API: Sending the data
+      fetch(SCRIPT_URL, {
+        method: 'POST', 
+        body: JSON.stringify(dataPayload) 
+      })
+      .then(response => response.json()) 
+      .then(data => {
+        // This code runs if the Google Script replies with a success!
+        statusText.innerText = '✅ Bean saved successfully!';
+        
+        // Clear the form boxes for the next entry
+        document.getElementById('beanName').value = '';
+        document.getElementById('roaster').value = '';
+        document.getElementById('roastDate').value = '';
+      })
+      .catch(error => {
+        // This code runs if something breaks on the way
+        statusText.innerText = '❌ Error saving bean. Check your connection.';
+      });
+    }
+  </script>
+</body>
+</html>
