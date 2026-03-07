@@ -3,64 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <title>My Private Brew</title>
   <link rel="icon" href="https://fav.farm/🫘" />
 
   <style>
-    /* THE THEME: HELVETICA */
-    body { 
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; 
-      max-width: 500px; 
-      margin: 0 auto; 
-      padding: 20px; 
-      background-color: #faf8f5; 
-      color: #333;
-    }
-
-    /* THE TITLE: BOLD & NORMAL */
-    h1 { 
-      text-align: center; 
-      color: #5c4033; 
-      font-weight: bold; 
-      font-style: normal; 
-      letter-spacing: -0.5px;
-      margin-bottom: 30px;
-    }
+    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; color: #333; }
     
+    /* HEADER & HELP BUTTON */
+    .header-area { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 30px; }
+    h1 { margin: 0; color: #5c4033; font-weight: bold; font-style: normal; letter-spacing: -0.5px; }
+    .help-btn { position: absolute; right: 0; background: #e0d4c8; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; color: #5c4033; }
+
+    /* MODAL (THE GLASS LAYER) */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 15px; position: relative; }
+    .modal-content h2 { color: #5c4033; margin-top: 0; }
+    .modal-content ul { padding-left: 20px; }
+    .modal-content li { margin-bottom: 10px; font-size: 14px; line-height: 1.5; }
+    .close-modal { background: #5c4033; color: white; border: none; padding: 10px 20px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+    /* REST OF STYLES (Helvetica & Detail) */
     .nav-bar { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
-    .nav-btn { flex: 1; min-width: 80px; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; font-size: 14px; text-align: center; }
-    .nav-btn:hover { background: #d0c0b0; }
+    .nav-btn { flex: 1; min-width: 80px; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; font-size: 14px; }
     .nav-btn.active-btn { background: #5c4033; color: white; }
-    
-    .page { display: none; } 
-    .page.active { display: block; }
-
+    .page { display: none; } .page.active { display: block; }
     .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
     input, select { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; }
     button.action-btn { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 10px; font-family: inherit; }
     button.action-btn.alt { background: #8d6e63; }
-    
     .timer-container { background: #f9f6f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0d4c8; }
     .phase-name { font-size: 18px; text-align: center; color: #e65100; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
     .phase-timer { font-size: 60px; font-weight: bold; text-align: center; color: #3e2723; line-height: 1; }
     .total-timer { font-size: 16px; text-align: center; color: #888; margin-top: 10px; font-weight: bold; }
     .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
     .row { display: flex; gap: 10px; }
-
     .list-header { border-top: 2px solid #eee; margin-top: 30px; padding-top: 20px; color: #5c4033; text-align: center; font-weight: bold; }
-    
-    /* FEED & TIMELINE */
     .timeline { border-left: 3px solid #e0d4c8; padding-left: 25px; margin-left: 15px; position: relative; margin-top: 20px; }
     .timeline-item { position: relative; margin-bottom: 25px; }
-    .timeline-item::before { 
-      content: ''; position: absolute; left: -34px; top: 0; 
-      width: 14px; height: 14px; background: #5c4033; 
-      border-radius: 50%; border: 3px solid #faf8f5; 
-    }
-    
+    .timeline-item::before { content: ''; position: absolute; left: -34px; top: 0; width: 14px; height: 14px; background: #5c4033; border-radius: 50%; border: 3px solid #faf8f5; }
     .timeline-card, .feed-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 15px; }
-    .data-label { font-weight: bold; color: #8d6e63; font-size: 12px; text-transform: uppercase; margin-top: 8px; display: block; }
+    .data-label { font-weight: bold; color: #8d6e63; font-size: 11px; text-transform: uppercase; margin-top: 8px; display: block; }
     .timeline-date { font-weight: bold; color: #8d6e63; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; text-transform: uppercase; }
     .feed-title { font-weight: bold; font-size: 18px; color: #3e2723; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
     .detail-text { font-size: 14px; color: #555; margin-bottom: 4px; line-height: 1.4; }
@@ -68,7 +50,23 @@
 </head>
 <body>
 
-  <h1>☕ My Private Brew</h1>
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>App Guide ☕</h2>
+      <ul>
+        <li><strong>Pantry:</strong> Register your coffee bags. View roaster and roast dates in the list below.</li>
+        <li><strong>Recipes:</strong> Define your brew steps in seconds. Phase durations are saved for the smart timer.</li>
+        <li><strong>Brew Station:</strong> Select a recipe to load the 3-phase countdown. <strong>Start</strong> the timer to begin.</li>
+        <li><strong>History:</strong> Log your bean, recipe, and rating to see your connected timeline in the <strong>Feed</strong>.</li>
+      </ul>
+      <button class="close-modal" onclick="toggleHelp()">Got it!</button>
+    </div>
+  </div>
+
+  <div class="header-area">
+    <h1>My Private Brew</h1>
+    <button class="help-btn" onclick="toggleHelp()">?</button>
+  </div>
 
   <div class="nav-bar">
     <button id="btn-brewPage" class="nav-btn active-btn" onclick="switchPage('brewPage')">Brew</button>
@@ -79,41 +77,37 @@
 
   <div id="brewPage" class="page active">
     <div class="card">
-      <h2>Brew Station</h2>
       <select id="activeRecipeDropdown" onchange="updateTimerSettings()"><option value="">Loading recipes...</option></select>
       <div class="timer-container">
-        <div class="phase-name" id="phaseNameDisplay">Ready to Brew</div>
+        <div class="phase-name" id="phaseNameDisplay">Ready</div>
         <div class="phase-timer" id="phaseTimeDisplay">0:00</div>
-        <div class="total-timer" id="totalTimeDisplay">Total Time: 0:00</div>
+        <div class="total-timer" id="totalTimeDisplay">Total: 0:00</div>
       </div>
       <div class="row">
         <button class="action-btn" id="startBtn" onclick="startTimer()">▶ Start</button>
         <button class="action-btn alt" onclick="stopTimer()">⏹ Stop</button>
       </div>
       <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-      <h3>Log This Brew</h3>
+      <h3>Log Brew</h3>
       <select id="brewBeanDropdown"><option value="">Loading beans...</option></select>
       <select id="brewRating">
-        <option value="5">⭐⭐⭐⭐⭐ (5 - Perfect)</option>
-        <option value="4">⭐⭐⭐⭐ (4 - Great)</option>
-        <option value="3">⭐⭐⭐ (3 - Good)</option>
-        <option value="2">⭐⭐ (2 - Okay)</option>
-        <option value="1">⭐ (1 - Bad)</option>
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐</option>
+        <option value="3">⭐⭐⭐</option>
+        <option value="2">⭐⭐</option>
+        <option value="1">⭐</option>
       </select>
-      <button class="action-btn" onclick="logBrew()">Save Brew</button>
+      <button class="action-btn" onclick="logBrew()">Save to Feed</button>
       <p class="status" id="brewStatus"></p>
     </div>
   </div>
 
-  <div id="feedPage" class="page">
-    <h2 style="text-align: center; color: #5c4033; margin-bottom: 10px;">Brew History</h2>
-    <div id="brewFeedContainer">Loading history...</div>
-  </div>
-
+  <div id="feedPage" class="page"><div id="brewFeedContainer" style="margin-top:20px;"></div></div>
+  
   <div id="recipePage" class="page">
     <div class="card">
       <h2>Create Recipe</h2>
-      <input type="text" id="recipeName" placeholder="Recipe Name (e.g., Morning V60)">
+      <input type="text" id="recipeName" placeholder="Recipe Name">
       <select id="recipeMethod">
         <option value="V60">V60</option>
         <option value="AeroPress">AeroPress</option>
@@ -121,137 +115,102 @@
       </select>
       <input type="number" id="coffeeGrams" placeholder="Coffee (grams)">
       <div class="row">
-        <input type="number" id="step1Time" placeholder="Phase 1 (sec)">
-        <input type="number" id="step2Time" placeholder="Phase 2 (sec)">
-        <input type="number" id="step3Time" placeholder="Phase 3 (sec)">
+        <input type="number" id="step1Time" placeholder="P1 (s)"><input type="number" id="step2Time" placeholder="P2 (s)"><input type="number" id="step3Time" placeholder="P3 (s)">
       </div>
       <button class="action-btn alt" onclick="saveRecipe()">Save Recipe</button>
       <p class="status" id="recipeStatus"></p>
     </div>
-    <h3 class="list-header">Saved Recipes</h3>
-    <div id="recipeListContainer">Loading recipes...</div>
+    <h3 class="list-header">Recipes</h3><div id="recipeListContainer"></div>
   </div>
 
   <div id="pantryPage" class="page">
     <div class="card">
-      <h2>Add New Bean</h2>
-      <input type="text" id="beanName" placeholder="Bean Name">
-      <input type="text" id="roaster" placeholder="Roaster">
-      <input type="date" id="roastDate">
+      <h2>Add Bean</h2>
+      <input type="text" id="beanName" placeholder="Bean Name"><input type="text" id="roaster" placeholder="Roaster"><input type="date" id="roastDate">
       <button class="action-btn alt" onclick="sendBeanData()">Save Bean</button>
       <p class="status" id="beanStatus"></p>
     </div>
-    <h3 class="list-header">Full Pantry</h3>
-    <div id="pantryListContainer">Loading beans...</div>
+    <h3 class="list-header">Pantry</h3><div id="pantryListContainer"></div>
   </div>
 
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
 
-    function switchPage(targetPageId) {
-      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-btn'));
-      document.getElementById(targetPageId).classList.add('active');
-      document.getElementById('btn-' + targetPageId).classList.add('active-btn');
+    // MODAL TOGGLE
+    function toggleHelp() {
+      const modal = document.getElementById('helpModal');
+      modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function switchPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-btn'));
+      document.getElementById(id).classList.add('active');
+      document.getElementById('btn-' + id).classList.add('active-btn');
     }
 
     let allRecipes = [], allBeans = [], allBrews = [];
     let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
 
     window.onload = function() {
-      // 1. Fetch & Render Recipes (FULL DETAILS)
       fetch(SCRIPT_URL + "?action=getRecipes").then(res => res.json()).then(data => {
         allRecipes = data.data; 
-        const dropdown = document.getElementById('activeRecipeDropdown');
-        const listContainer = document.getElementById('recipeListContainer');
-        dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; 
-        listContainer.innerHTML = '';
-        
-        allRecipes.slice().reverse().forEach((row, index) => {
-          const originalIndex = allRecipes.length - 1 - index;
-          dropdown.innerHTML += `<option value="${originalIndex}">${row[1]} (${row[3]}g)</option>`;
-          
-          listContainer.innerHTML += `
-            <div class="feed-card">
-              <div class="feed-title">${row[1]}</div>
-              <span class="data-label">Method</span><div class="detail-text">${row[2]}</div>
-              <span class="data-label">Coffee Dose</span><div class="detail-text">${row[3]}g</div>
-              <span class="data-label">Phase Durations</span><div class="detail-text">P1: ${row[4]}s | P2: ${row[5]}s | P3: ${row[6]}s</div>
-            </div>`;
+        const d = document.getElementById('activeRecipeDropdown'); const l = document.getElementById('recipeListContainer');
+        d.innerHTML = '<option value="">-- Choose Recipe --</option>'; l.innerHTML = '';
+        allRecipes.slice().reverse().forEach((row, i) => {
+          d.innerHTML += `<option value="${allRecipes.length - 1 - i}">${row[1]}</option>`;
+          l.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><span class="data-label">Method</span><div class="detail-text">${row[2]} (${row[3]}g)</div><span class="data-label">Steps</span><div class="detail-text">${row[4]}s | ${row[5]}s | ${row[6]}s</div></div>`;
         });
       });
 
-      // 2. Fetch & Render Beans (FULL DETAILS)
       fetch(SCRIPT_URL + "?action=getBeans").then(res => res.json()).then(data => {
         allBeans = data.data;
-        const beanDropdown = document.getElementById('brewBeanDropdown');
-        const listContainer = document.getElementById('pantryListContainer');
-        beanDropdown.innerHTML = '<option value="">-- Choose a Bean --</option>';
-        listContainer.innerHTML = '';
-
+        const bd = document.getElementById('brewBeanDropdown'); const bl = document.getElementById('pantryListContainer');
+        bd.innerHTML = '<option value="">-- Choose Bean --</option>'; bl.innerHTML = '';
         allBeans.slice().reverse().forEach(row => {
-          beanDropdown.innerHTML += `<option value="${row[1]}">${row[1]} by ${row[2]}</option>`;
-          listContainer.innerHTML += `
-            <div class="feed-card">
-              <div class="feed-title">${row[1]}</div>
-              <span class="data-label">Roaster</span><div class="detail-text">${row[2]}</div>
-              <span class="data-label">Roast Date</span><div class="detail-text">${new Date(row[3]).toLocaleDateString()}</div>
-            </div>`;
+          bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
+          bl.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><span class="data-label">Roaster</span><div class="detail-text">${row[2]}</div><span class="data-label">Roast Date</span><div class="detail-text">${new Date(row[3]).toLocaleDateString()}</div></div>`;
         });
       });
 
-      // 3. Fetch & Render Brew Feed
       fetch(SCRIPT_URL + "?action=getBrews").then(res => res.json()).then(data => {
-        allBrews = data.data;
-        const feedContainer = document.getElementById('brewFeedContainer');
-        if (allBrews.length === 0) { feedContainer.innerHTML = '<p style="text-align:center;">No brews logged yet.</p>'; return; }
-        feedContainer.innerHTML = '<div class="timeline" id="brewTimeline"></div>';
-        const timeline = document.getElementById('brewTimeline');
+        allBrews = data.data; const fc = document.getElementById('brewFeedContainer');
+        if (allBrews.length === 0) { fc.innerHTML = '<p style="text-align:center;">Empty history.</p>'; return; }
+        fc.innerHTML = '<div class="timeline" id="brewTimeline"></div>'; const tl = document.getElementById('brewTimeline');
         allBrews.slice().reverse().forEach(row => {
-          const stars = "⭐".repeat(row[3]); 
-          const dateObj = new Date(row[0]);
-          const dateString = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-          const timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-          timeline.innerHTML += `<div class="timeline-item"><div class="timeline-card"><div class="timeline-date">${dateString} at ${timeString}</div><div class="timeline-title">${row[2]}</div><div class="detail-text">☕ ${row[1]}</div><div class="detail-text">${stars}</div></div></div>`;
+          const dt = new Date(row[0]);
+          tl.innerHTML += `<div class="timeline-item"><div class="timeline-card"><div class="timeline-date">${dt.toLocaleDateString()} ${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div><div class="timeline-title">${row[2]}</div><div class="detail-text">☕ ${row[1]}</div><div class="detail-text">${"⭐".repeat(row[3])}</div></div></div>`;
         });
       });
     };
 
-    // --- TIMER & POST LOGIC ---
     function updateTimerSettings() {
-      const selectedIndex = document.getElementById('activeRecipeDropdown').value;
-      if (selectedIndex === "") return;
-      const row = allRecipes[selectedIndex];
-      const s1 = parseInt(row[4]) || 0; const s2 = parseInt(row[5]) || 0; const s3 = parseInt(row[6]) || 0; 
-      endPhase1 = s1; endPhase2 = s1 + s2; endPhase3 = s1 + s2 + s3;
-      document.getElementById('phaseNameDisplay').innerText = "Ready";
-      document.getElementById('phaseTimeDisplay').innerText = formatTime(s1);
-      document.getElementById('totalTimeDisplay').innerText = `Total: 0:00 / ${formatTime(endPhase3)}`;
+      const idx = document.getElementById('activeRecipeDropdown').value; if (idx === "") return;
+      const row = allRecipes[idx]; const s1 = parseInt(row[4])||0; const s2 = parseInt(row[5])||0; const s3 = parseInt(row[6])||0;
+      endPhase1 = s1; endPhase2 = s1+s2; endPhase3 = s1+s2+s3;
+      document.getElementById('phaseNameDisplay').innerText = "Ready"; document.getElementById('phaseTimeDisplay').innerText = formatTime(s1);
     }
 
-    let totalSeconds = 0; let timerInterval = null;
-    function formatTime(s) { if (s < 0) return "0:00"; const m = Math.floor(s / 60); const sc = s % 60; return m + ":" + (sc < 10 ? "0" : "") + sc; }
+    let totalS = 0, timerInt = null;
+    function formatTime(s) { const m = Math.floor(s/60); const sc = s%60; return m+":"+(sc<10?"0":"")+sc; }
 
     function startTimer() {
-      if (timerInterval || endPhase1 === 0) return; 
-      document.getElementById('startBtn').disabled = true;
-      timerInterval = setInterval(function() {
-        totalSeconds++;
-        document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalSeconds)} / ${formatTime(endPhase3)}`;
-        if (totalSeconds <= endPhase1) { document.getElementById('phaseNameDisplay').innerText = "Phase 1"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1 - totalSeconds); } 
-        else if (totalSeconds <= endPhase2) { document.getElementById('phaseNameDisplay').innerText = "Phase 2"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2 - totalSeconds); } 
-        else if (totalSeconds <= endPhase3) { document.getElementById('phaseNameDisplay').innerText = "Phase 3"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3 - totalSeconds); } 
-        else { document.getElementById('phaseNameDisplay').innerText = "Finished"; document.getElementById('phaseTimeDisplay').innerText = "0:00"; stopTimer(); }
+      if (timerInt || endPhase1 === 0) return; document.getElementById('startBtn').disabled = true;
+      timerInt = setInterval(() => {
+        totalS++; document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)}`;
+        if (totalS <= endPhase1) { document.getElementById('phaseNameDisplay').innerText = "Phase 1"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1-totalS); }
+        else if (totalS <= endPhase2) { document.getElementById('phaseNameDisplay').innerText = "Phase 2"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2-totalS); }
+        else if (totalS <= endPhase3) { document.getElementById('phaseNameDisplay').innerText = "Phase 3"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3-totalS); }
+        else { document.getElementById('phaseNameDisplay').innerText = "Finished"; stopTimer(); }
       }, 1000);
     }
-
-    function stopTimer() { clearInterval(timerInterval); timerInterval = null; document.getElementById('startBtn').disabled = false; }
+    function stopTimer() { clearInterval(timerInt); timerInt = null; document.getElementById('startBtn').disabled = false; }
 
     function logBrew() {
       const s = document.getElementById('brewStatus'); s.innerText = 'Saving...';
       const r = document.getElementById('activeRecipeDropdown');
-      const payload = { action: 'logBrew', payload: { beanName: document.getElementById('brewBeanDropdown').value, recipeName: r.options[r.selectedIndex].text.split(' (')[0], rating: document.getElementById('brewRating').value } };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; totalSeconds = 0; }).catch(() => s.innerText = '❌ Error.');
+      const payload = { action: 'logBrew', payload: { beanName: document.getElementById('brewBeanDropdown').value, recipeName: r.options[r.selectedIndex].text, rating: document.getElementById('brewRating').value } };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; }).catch(() => s.innerText = '❌ Error.');
     }
 
     function saveRecipe() {
