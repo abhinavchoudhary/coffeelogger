@@ -5,77 +5,149 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Coffee Tracker & Timer</title>
   <style>
-    /* THE PAINT (CSS) */
     body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    input { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
-    button { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
-    button:hover { background: #3e2723; }
-    #statusMessage { text-align: center; margin-top: 15px; color: #5c4033; font-weight: bold; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h1 { text-align: center; color: #5c4033; }
+    input, select { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+    button { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+    button.alt-btn { background: #8d6e63; }
+    button:hover { opacity: 0.9; }
+    
+    /* Timer Specific Styles */
+    .timer-display { font-size: 60px; font-weight: bold; text-align: center; color: #3e2723; margin: 10px 0; }
+    .phase-display { font-size: 20px; text-align: center; color: #e65100; font-weight: bold; margin-bottom: 20px; min-height: 24px;}
+    .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
   </style>
 </head>
 <body>
 
-  <h1>☕ My Coffee Pantry</h1>
+  <h1>☕ Coffee Hub</h1>
+
+  <div class="card">
+    <h2>Brew Station</h2>
+    
+    <div class="timer-display" id="timeDisplay">0:00</div>
+    <div class="phase-display" id="phaseDisplay">Ready to Brew</div>
+    
+    <button onclick="startTimer()">▶ Start Timer</button>
+    <button class="alt-btn" onclick="stopTimer()">⏹ Stop Timer</button>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+    
+    <h3>Log This Brew</h3>
+    <label>Bean Used</label>
+    <input type="text" id="brewBean" placeholder="e.g., Yirgacheffe">
+    
+    <label>Brew Method</label>
+    <select id="brewMethod">
+      <option value="V60">V60</option>
+      <option value="Chemex">Chemex</option>
+      <option value="AeroPress">AeroPress</option>
+      <option value="French Press">French Press</option>
+    </select>
+
+    <label>Grind Size (1-10)</label>
+    <input type="number" id="grindSize" placeholder="e.g., 5">
+    
+    <label>Rating (1-5 Stars)</label>
+    <input type="number" id="rating" placeholder="e.g., 4">
+    
+    <button onclick="logBrew()">Save Brew to Sheet</button>
+    <p class="status" id="brewStatus"></p>
+  </div>
 
   <div class="card">
     <h2>Add New Bean</h2>
-    
-    <label for="beanName">Bean Name</label>
-    <input type="text" id="beanName" placeholder="e.g., Yirgacheffe">
-    
-    <label for="roaster">Roaster</label>
-    <input type="text" id="roaster" placeholder="e.g., Onyx Coffee Lab">
-    
-    <label for="roastDate">Roast Date</label>
+    <input type="text" id="beanName" placeholder="Bean Name">
+    <input type="text" id="roaster" placeholder="Roaster">
     <input type="date" id="roastDate">
-    
-    <button onclick="sendBeanData()">Save Bean to Sheet</button>
-    <p id="statusMessage"></p>
+    <button class="alt-btn" onclick="sendBeanData()">Save Bean</button>
+    <p class="status" id="beanStatus"></p>
   </div>
 
   <script>
-    // ⚠️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT URL ⚠️
+    // ⚠️ PASTE YOUR EXACT SAME SCRIPT URL HERE ⚠️
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
 
-    function sendBeanData() {
-      const statusText = document.getElementById('statusMessage');
-      statusText.innerText = 'Sending to your spreadsheet...';
+    // --- TIMER LOGIC ---
+    let totalSeconds = 0;
+    let timerInterval = null; // This holds our "metronome"
 
-      // 1. Gather the data from the input boxes
-      const name = document.getElementById('beanName').value;
-      const roasterName = document.getElementById('roaster').value;
-      const date = document.getElementById('roastDate').value;
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      // This adds a leading zero to seconds (e.g., 0:05 instead of 0:5)
+      return mins + ":" + (secs < 10 ? "0" : "") + secs; 
+    }
 
-      // 2. Build the JSON Payload (The exact format our Back-End expects)
-      const dataPayload = {
-        action: 'addBean',
+    function startTimer() {
+      // Prevent multiple metronomes from starting if you click 'Start' twice
+      if (timerInterval) return; 
+
+      timerInterval = setInterval(function() {
+        totalSeconds++;
+        document.getElementById('timeDisplay').innerText = formatTime(totalSeconds);
+
+        // The Relay Race (Phases for a standard V60)
+        if (totalSeconds <= 45) {
+          document.getElementById('phaseDisplay').innerText = "Phase 1: Bloom (Pour 50g)";
+        } else if (totalSeconds <= 90) {
+          document.getElementById('phaseDisplay').innerText = "Phase 2: Main Pour (Up to 250g)";
+        } else {
+          document.getElementById('phaseDisplay').innerText = "Phase 3: Drawdown (Let it drip)";
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      // Stop the metronome
+      clearInterval(timerInterval);
+      timerInterval = null; 
+      document.getElementById('phaseDisplay').innerText = "Brew Finished!";
+    }
+
+    // --- DATABASE LOGIC ---
+    function logBrew() {
+      const statusText = document.getElementById('brewStatus');
+      statusText.innerText = 'Saving brew...';
+
+      const payload = {
+        action: 'logBrew',
         payload: {
-          beanName: name,
-          roaster: roasterName,
-          roastDate: date
+          beanName: document.getElementById('brewBean').value,
+          method: document.getElementById('brewMethod').value,
+          grindSize: document.getElementById('grindSize').value,
+          rating: document.getElementById('rating').value
         }
       };
 
-      // 3. The Fetch API: Sending the data
-      fetch(SCRIPT_URL, {
-        method: 'POST', 
-        body: JSON.stringify(dataPayload) 
-      })
-      .then(response => response.json()) 
-      .then(data => {
-        // This code runs if the Google Script replies with a success!
-        statusText.innerText = '✅ Bean saved successfully!';
-        
-        // Clear the form boxes for the next entry
-        document.getElementById('beanName').value = '';
-        document.getElementById('roaster').value = '';
-        document.getElementById('roastDate').value = '';
-      })
-      .catch(error => {
-        // This code runs if something breaks on the way
-        statusText.innerText = '❌ Error saving bean. Check your connection.';
-      });
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(data => {
+          statusText.innerText = '✅ Brew Logged!';
+          // Reset Timer for next time
+          totalSeconds = 0;
+          document.getElementById('timeDisplay').innerText = "0:00";
+        })
+        .catch(err => statusText.innerText = '❌ Error saving brew.');
+    }
+
+    // (Kept your original addBean logic here for Tool 1)
+    function sendBeanData() {
+      const statusText = document.getElementById('beanStatus');
+      statusText.innerText = 'Saving...';
+      const payload = {
+        action: 'addBean',
+        payload: {
+          beanName: document.getElementById('beanName').value,
+          roaster: document.getElementById('roaster').value,
+          roastDate: document.getElementById('roastDate').value
+        }
+      };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(data => statusText.innerText = '✅ Bean saved!')
+        .catch(err => statusText.innerText = '❌ Error.');
     }
   </script>
 </body>
