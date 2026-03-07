@@ -29,12 +29,28 @@
     .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
     .row { display: flex; gap: 10px; }
 
-    /* --- NEW: FEED & LIST STYLES --- */
     .list-header { border-top: 2px solid #eee; margin-top: 30px; padding-top: 20px; color: #5c4033; text-align: center; }
+    
+    /* --- UPGRADED: TIMELINE FEED STYLES --- */
+    .timeline { border-left: 3px solid #e0d4c8; padding-left: 25px; margin-left: 15px; position: relative; margin-top: 20px; }
+    .timeline-item { position: relative; margin-bottom: 25px; }
+    
+    /* This creates the little dot right on the vertical line */
+    .timeline-item::before { 
+      content: ''; position: absolute; left: -34px; top: 0; 
+      width: 14px; height: 14px; background: #5c4033; 
+      border-radius: 50%; border: 3px solid #faf8f5; 
+    }
+    
+    .timeline-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .timeline-date { font-weight: bold; color: #8d6e63; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .timeline-title { font-weight: bold; font-size: 18px; color: #3e2723; margin-bottom: 5px; }
+    .timeline-details { font-size: 14px; color: #666; margin-bottom: 3px; }
+
+    /* Regular Feed Cards for Recipes and Pantry */
     .feed-card { background: #fff; border-left: 5px solid #8d6e63; padding: 15px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .feed-title { font-weight: bold; font-size: 18px; color: #3e2723; margin-bottom: 5px; }
     .feed-details { font-size: 14px; color: #666; margin-bottom: 5px; }
-    .feed-date { font-size: 12px; color: #aaa; text-align: right; }
   </style>
 </head>
 <body>
@@ -77,7 +93,7 @@
   </div>
 
   <div id="feedPage" class="page">
-    <h2 style="text-align: center; color: #5c4033;">My Brew History</h2>
+    <h2 style="text-align: center; color: #5c4033; margin-bottom: 0;">My Brew History</h2>
     <div id="brewFeedContainer">Loading history...</div>
   </div>
 
@@ -99,7 +115,6 @@
       <button class="action-btn alt" onclick="saveRecipe()">Save Recipe</button>
       <p class="status" id="recipeStatus"></p>
     </div>
-    
     <h3 class="list-header">Saved Recipes</h3>
     <div id="recipeListContainer">Loading recipes...</div>
   </div>
@@ -113,7 +128,6 @@
       <button class="action-btn alt" onclick="sendBeanData()">Save Bean</button>
       <p class="status" id="beanStatus"></p>
     </div>
-
     <h3 class="list-header">My Pantry</h3>
     <div id="pantryListContainer">Loading beans...</div>
   </div>
@@ -132,29 +146,18 @@
     let allRecipes = [], allBeans = [], allBrews = [];
     let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
 
-    // --- DATA FETCHING & RENDERING ---
     window.onload = function() {
       // 1. Fetch & Render Recipes
       fetch(SCRIPT_URL + "?action=getRecipes").then(res => res.json()).then(data => {
         allRecipes = data.data; 
         const dropdown = document.getElementById('activeRecipeDropdown');
         const listContainer = document.getElementById('recipeListContainer');
-        dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; 
-        listContainer.innerHTML = '';
+        dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; listContainer.innerHTML = '';
         
-        // .slice().reverse() makes the newest ones show up at the top!
         allRecipes.slice().reverse().forEach((row, index) => {
-          // Dropdown math (needs original index)
           const originalIndex = allRecipes.length - 1 - index;
           dropdown.innerHTML += `<option value="${originalIndex}">${row[1]} (${row[3]}g)</option>`;
-          
-          // List rendering
-          listContainer.innerHTML += `
-            <div class="feed-card">
-              <div class="feed-title">${row[1]}</div>
-              <div class="feed-details">${row[2]} • ${row[3]}g coffee</div>
-              <div class="feed-details">Phases: ${row[4]}s / ${row[5]}s / ${row[6]}s</div>
-            </div>`;
+          listContainer.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="feed-details">${row[2]} • ${row[3]}g coffee</div><div class="feed-details">Phases: ${row[4]}s / ${row[5]}s / ${row[6]}s</div></div>`;
         });
       });
 
@@ -163,45 +166,50 @@
         allBeans = data.data;
         const beanDropdown = document.getElementById('brewBeanDropdown');
         const listContainer = document.getElementById('pantryListContainer');
-        beanDropdown.innerHTML = '<option value="">-- Choose a Bean --</option>';
-        listContainer.innerHTML = '';
+        beanDropdown.innerHTML = '<option value="">-- Choose a Bean --</option>'; listContainer.innerHTML = '';
 
         allBeans.slice().reverse().forEach(row => {
           beanDropdown.innerHTML += `<option value="${row[1]}">${row[1]} by ${row[2]}</option>`;
-          listContainer.innerHTML += `
-            <div class="feed-card">
-              <div class="feed-title">${row[1]}</div>
-              <div class="feed-details">Roaster: ${row[2]}</div>
-              <div class="feed-date">Roasted: ${new Date(row[3]).toLocaleDateString()}</div>
-            </div>`;
+          listContainer.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="feed-details">Roaster: ${row[2]}</div><div class="feed-details">Roasted: ${new Date(row[3]).toLocaleDateString()}</div></div>`;
         });
       });
 
-      // 3. Fetch & Render Brew Feed (NEW)
+      // 3. Fetch & Render Brew Feed (THE TIMELINE UPGRADE)
       fetch(SCRIPT_URL + "?action=getBrews").then(res => res.json()).then(data => {
         allBrews = data.data;
         const feedContainer = document.getElementById('brewFeedContainer');
-        feedContainer.innerHTML = '';
         
         if (allBrews.length === 0) {
           feedContainer.innerHTML = '<p style="text-align:center;">No brews logged yet. Go make some coffee!</p>';
+          return;
         }
 
+        // Create the timeline string wrapper
+        feedContainer.innerHTML = '<div class="timeline" id="brewTimeline"></div>';
+        const timeline = document.getElementById('brewTimeline');
+
         allBrews.slice().reverse().forEach(row => {
-          // row[0]=Timestamp, row[1]=Bean, row[2]=Recipe, row[3]=Rating
           const stars = "⭐".repeat(row[3]); 
-          feedContainer.innerHTML += `
-            <div class="feed-card">
-              <div class="feed-title">${row[2]}</div>
-              <div class="feed-details">Bean: ${row[1]}</div>
-              <div class="feed-details">Rating: ${stars}</div>
-              <div class="feed-date">${new Date(row[0]).toLocaleDateString()} at ${new Date(row[0]).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+          
+          // Formatting the Date and Time beautifully
+          const dateObj = new Date(row[0]);
+          const dateString = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+          const timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+          timeline.innerHTML += `
+            <div class="timeline-item">
+              <div class="timeline-card">
+                <div class="timeline-date">${dateString} at ${timeString}</div>
+                <div class="timeline-title">${row[2]}</div>
+                <div class="timeline-details">☕ Bean: ${row[1]}</div>
+                <div class="timeline-details">⭐ Rating: ${stars}</div>
+              </div>
             </div>`;
         });
       });
     };
 
-    // --- TIMER LOGIC (Unchanged) ---
+    // --- TIMER LOGIC ---
     function updateTimerSettings() {
       const selectedIndex = document.getElementById('activeRecipeDropdown').value;
       if (selectedIndex === "") return;
@@ -238,7 +246,7 @@
     function logBrew() {
       const status = document.getElementById('brewStatus'); status.innerText = 'Saving brew...';
       const recipeDropdown = document.getElementById('activeRecipeDropdown');
-      const recipeNameText = recipeDropdown.selectedIndex > 0 ? recipeDropdown.options[recipeDropdown.selectedIndex].text.split(' (')[0] : "Unknown Recipe"; // Grabs name without grams
+      const recipeNameText = recipeDropdown.selectedIndex > 0 ? recipeDropdown.options[recipeDropdown.selectedIndex].text.split(' (')[0] : "Unknown Recipe"; 
       
       const payload = { action: 'logBrew', payload: { beanName: document.getElementById('brewBeanDropdown').value, recipeName: recipeNameText, rating: document.getElementById('brewRating').value } };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(() => {
