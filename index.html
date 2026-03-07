@@ -8,21 +8,26 @@
     body { font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; }
     h1 { text-align: center; color: #5c4033; }
     
-    /* --- NEW: NAVIGATION BAR STYLES --- */
     .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; }
     .nav-btn { flex: 1; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; }
     .nav-btn:hover { background: #d0c0b0; }
+    .nav-btn.active-btn { background: #5c4033; color: white; } /* Highlight for active tab */
     
-    /* --- NEW: PAGE HIDING LOGIC --- */
-    .page { display: none; } /* This hides all pages by default */
-    .page.active { display: block; } /* This shows the page with the 'active' class */
+    .page { display: none; } 
+    .page.active { display: block; }
 
     .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input, select { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+    input, select { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
     button.action-btn { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
     button.action-btn.alt { background: #8d6e63; }
-    .timer-display { font-size: 60px; font-weight: bold; text-align: center; color: #3e2723; margin: 10px 0; }
-    .phase-display { font-size: 20px; text-align: center; color: #e65100; font-weight: bold; margin-bottom: 20px; min-height: 24px;}
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* --- NEW: DUAL TIMER STYLES --- */
+    .timer-container { background: #f9f6f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0d4c8; }
+    .phase-name { font-size: 18px; text-align: center; color: #e65100; font-weight: bold; margin-bottom: 5px; }
+    .phase-timer { font-size: 60px; font-weight: bold; text-align: center; color: #3e2723; line-height: 1; }
+    .total-timer { font-size: 16px; text-align: center; color: #888; margin-top: 10px; font-weight: bold; }
+    
     .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
     .row { display: flex; gap: 10px; }
   </style>
@@ -32,30 +37,46 @@
   <h1>☕ Coffee Hub</h1>
 
   <div class="nav-bar">
-    <button class="nav-btn" onclick="switchPage('brewPage')">Brew Station</button>
-    <button class="nav-btn" onclick="switchPage('recipePage')">Recipes</button>
-    <button class="nav-btn" onclick="switchPage('pantryPage')">Pantry</button>
+    <button id="btn-brewPage" class="nav-btn active-btn" onclick="switchPage('brewPage')">Brew Station</button>
+    <button id="btn-recipePage" class="nav-btn" onclick="switchPage('recipePage')">Recipes</button>
+    <button id="btn-pantryPage" class="nav-btn" onclick="switchPage('pantryPage')">Pantry</button>
   </div>
 
   <div id="brewPage" class="page active">
     <div class="card">
       <h2>Brew Station</h2>
-      <label>Select Recipe</label>
       <select id="activeRecipeDropdown" onchange="updateTimerSettings()">
         <option value="">Loading recipes...</option>
       </select>
       
-      <div class="timer-display" id="timeDisplay">0:00</div>
-      <div class="phase-display" id="phaseDisplay">Select a recipe above</div>
+      <div class="timer-container">
+        <div class="phase-name" id="phaseNameDisplay">Select a recipe</div>
+        <div class="phase-timer" id="phaseTimeDisplay">0:00</div>
+        <div class="total-timer" id="totalTimeDisplay">Total Time: 0:00</div>
+      </div>
       
-      <button class="action-btn" onclick="startTimer()">▶ Start Timer</button>
-      <button class="action-btn alt" onclick="stopTimer()">⏹ Stop Timer</button>
+      <div class="row">
+        <button class="action-btn" id="startBtn" onclick="startTimer()">▶ Start</button>
+        <button class="action-btn alt" onclick="stopTimer()">⏹ Stop</button>
+      </div>
 
       <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
       
       <h3>Log This Brew</h3>
-      <input type="text" id="brewBean" placeholder="Bean Used (e.g., Yirgacheffe)">
-      <input type="number" id="rating" placeholder="Rating (1-5 Stars)">
+      <label>Select Bean</label>
+      <select id="brewBeanDropdown">
+        <option value="">Loading beans...</option>
+      </select>
+      
+      <label>Rating</label>
+      <select id="brewRating">
+        <option value="5">⭐⭐⭐⭐⭐ (5 - Perfect)</option>
+        <option value="4">⭐⭐⭐⭐ (4 - Great)</option>
+        <option value="3">⭐⭐⭐ (3 - Good)</option>
+        <option value="2">⭐⭐ (2 - Okay)</option>
+        <option value="1">⭐ (1 - Bad)</option>
+      </select>
+
       <button class="action-btn" onclick="logBrew()">Save Brew</button>
       <p class="status" id="brewStatus"></p>
     </div>
@@ -71,13 +92,11 @@
         <option value="Inverted AeroPress">Inverted AeroPress</option>
       </select>
       <input type="number" id="coffeeGrams" placeholder="Coffee (grams)">
-      
       <div class="row">
-        <input type="number" id="step1Time" placeholder="Step 1 (sec)">
-        <input type="number" id="step2Time" placeholder="Step 2 (sec)">
-        <input type="number" id="step3Time" placeholder="Step 3 (sec)">
+        <input type="number" id="step1Time" placeholder="Phase 1 (sec)">
+        <input type="number" id="step2Time" placeholder="Phase 2 (sec)">
+        <input type="number" id="step3Time" placeholder="Phase 3 (sec)">
       </div>
-      
       <button class="action-btn alt" onclick="saveRecipe()">Save Recipe</button>
       <p class="status" id="recipeStatus"></p>
     </div>
@@ -98,57 +117,74 @@
     // ⚠️ PASTE YOUR EXACT SAME SCRIPT URL HERE ⚠️
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
 
-    // --- NEW: TAB NAVIGATION LOGIC ---
+    // --- TAB NAVIGATION ---
     function switchPage(targetPageId) {
-      // 1. Hide all pages by removing the 'active' class
-      const allPages = document.querySelectorAll('.page');
-      allPages.forEach(page => {
-        page.classList.remove('active');
-      });
-
-      // 2. Show the specific page we clicked on
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-btn'));
+      
       document.getElementById(targetPageId).classList.add('active');
+      document.getElementById('btn-' + targetPageId).classList.add('active-btn');
     }
 
-    // --- GLOBAL VARIABLES & DATA FETCHING ---
+    // --- DATA FETCHING (Recipes & Beans) ---
     let allRecipes = []; 
-    let activeStep1 = 0, activeStep2 = 0, activeStep3 = 0;
+    let allBeans = [];
+    
+    // The "Relay Race" end markers
+    let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
 
     window.onload = function() {
+      // 1. Fetch Recipes
       fetch(SCRIPT_URL + "?action=getRecipes")
         .then(res => res.json())
         .then(data => {
           allRecipes = data.data; 
-          populateDropdown();
+          const dropdown = document.getElementById('activeRecipeDropdown');
+          dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; 
+          allRecipes.forEach((row, index) => {
+            dropdown.innerHTML += `<option value="${index}">${row[1]} (${row[3]}g)</option>`;
+          });
+        });
+
+      // 2. Fetch Beans for the new dropdown
+      fetch(SCRIPT_URL + "?action=getBeans")
+        .then(res => res.json())
+        .then(data => {
+          allBeans = data.data;
+          const beanDropdown = document.getElementById('brewBeanDropdown');
+          beanDropdown.innerHTML = '<option value="">-- Choose a Bean --</option>';
+          allBeans.forEach(row => {
+            // row[1] is Bean Name, row[2] is Roaster
+            beanDropdown.innerHTML += `<option value="${row[1]}">${row[1]} by ${row[2]}</option>`;
+          });
         });
     };
-
-    function populateDropdown() {
-      const dropdown = document.getElementById('activeRecipeDropdown');
-      dropdown.innerHTML = '<option value="">-- Choose a Recipe --</option>'; 
-      allRecipes.forEach((row, index) => {
-        const option = document.createElement('option');
-        option.value = index; 
-        option.innerText = row[1]; // Recipe Name
-        dropdown.appendChild(option);
-      });
-    }
 
     function updateTimerSettings() {
       const selectedIndex = document.getElementById('activeRecipeDropdown').value;
       if (selectedIndex === "") return;
-      const selectedRow = allRecipes[selectedIndex];
-      activeStep1 = parseInt(selectedRow[4]); 
-      activeStep2 = parseInt(selectedRow[5]); 
-      activeStep3 = parseInt(selectedRow[6]); 
-      document.getElementById('phaseDisplay').innerText = `Loaded: ${selectedRow[1]} (${selectedRow[3]}g)`;
+      
+      const row = allRecipes[selectedIndex];
+      const step1Dur = parseInt(row[4]) || 0; 
+      const step2Dur = parseInt(row[5]) || 0; 
+      const step3Dur = parseInt(row[6]) || 0; 
+
+      // Calculate the cumulative relay race markers
+      endPhase1 = step1Dur;
+      endPhase2 = endPhase1 + step2Dur;
+      endPhase3 = endPhase2 + step3Dur;
+
+      document.getElementById('phaseNameDisplay').innerText = `Ready: ${row[1]}`;
+      document.getElementById('phaseTimeDisplay').innerText = formatTime(step1Dur);
+      document.getElementById('totalTimeDisplay').innerText = `Total Time: 0:00 / ${formatTime(endPhase3)}`;
     }
 
-    // --- TIMER LOGIC ---
+    // --- UPGRADED DUAL TIMER LOGIC ---
     let totalSeconds = 0;
     let timerInterval = null;
 
     function formatTime(seconds) {
+      if (seconds < 0) return "0:00"; // Safety catch
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
       return mins + ":" + (secs < 10 ? "0" : "") + secs; 
@@ -156,20 +192,30 @@
 
     function startTimer() {
       if (timerInterval) return; 
-      if (activeStep1 === 0) { alert("Please select a recipe first!"); return; }
+      if (endPhase1 === 0) { alert("Please select a recipe first!"); return; }
+
+      document.getElementById('startBtn').disabled = true;
 
       timerInterval = setInterval(function() {
         totalSeconds++;
-        document.getElementById('timeDisplay').innerText = formatTime(totalSeconds);
+        document.getElementById('totalTimeDisplay').innerText = `Total Time: ${formatTime(totalSeconds)} / ${formatTime(endPhase3)}`;
 
-        if (totalSeconds <= activeStep1) {
-          document.getElementById('phaseDisplay').innerText = `Phase 1 (until ${activeStep1}s)`;
-        } else if (totalSeconds <= activeStep2) {
-          document.getElementById('phaseDisplay').innerText = `Phase 2 (until ${activeStep2}s)`;
-        } else if (totalSeconds <= activeStep3) {
-          document.getElementById('phaseDisplay').innerText = `Phase 3 (until ${activeStep3}s)`;
-        } else {
-          document.getElementById('phaseDisplay').innerText = "Brew Finished!";
+        // Checking the relay race markers
+        if (totalSeconds <= endPhase1) {
+          document.getElementById('phaseNameDisplay').innerText = "Phase 1 (Bloom)";
+          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1 - totalSeconds);
+        } 
+        else if (totalSeconds <= endPhase2) {
+          document.getElementById('phaseNameDisplay').innerText = "Phase 2 (Main Pour)";
+          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2 - totalSeconds);
+        } 
+        else if (totalSeconds <= endPhase3) {
+          document.getElementById('phaseNameDisplay').innerText = "Phase 3 (Drawdown)";
+          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3 - totalSeconds);
+        } 
+        else {
+          document.getElementById('phaseNameDisplay').innerText = "✅ Brew Finished!";
+          document.getElementById('phaseTimeDisplay').innerText = "0:00";
           stopTimer(); 
         }
       }, 1000);
@@ -178,10 +224,35 @@
     function stopTimer() {
       clearInterval(timerInterval);
       timerInterval = null; 
+      document.getElementById('startBtn').disabled = false;
     }
 
-    // --- DATABASE POST LOGIC (Upgraded Courier) ---
-    function saveRecipe() {
+    // --- DATABASE POST LOGIC ---
+    function logBrew() {
+      const status = document.getElementById('brewStatus');
+      status.innerText = 'Saving brew...';
+      
+      const recipeDropdown = document.getElementById('activeRecipeDropdown');
+      const recipeNameText = recipeDropdown.selectedIndex > 0 ? recipeDropdown.options[recipeDropdown.selectedIndex].text : "Unknown Recipe";
+
+      const payload = {
+        action: 'logBrew',
+        payload: {
+          beanName: document.getElementById('brewBeanDropdown').value,
+          recipeName: recipeNameText, 
+          rating: document.getElementById('brewRating').value
+        }
+      };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(() => {
+          status.innerText = '✅ Brew Logged!';
+          totalSeconds = 0; // Reset timer memory for next brew
+        })
+        .catch(() => status.innerText = '❌ Error.');
+    }
+
+    function saveRecipe() { /* ... kept exactly the same ... */ 
       const status = document.getElementById('recipeStatus');
       status.innerText = 'Saving...';
       const payload = {
@@ -195,49 +266,20 @@
           step3: document.getElementById('step3Time').value
         }
       };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success') {
-            status.innerText = '✅ Recipe saved! Refresh page to see it.';
-          } else { status.innerText = '❌ Server said: ' + data.message; }
-        }).catch(() => status.innerText = '❌ Network error.');
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(data => {
+        if (data.status === 'success') status.innerText = '✅ Recipe saved! Refresh page.';
+        else status.innerText = '❌ Server error.';
+      }).catch(() => status.innerText = '❌ Error.');
     }
 
-    function logBrew() {
-      const status = document.getElementById('brewStatus');
-      status.innerText = 'Saving brew...';
-      const dropdown = document.getElementById('activeRecipeDropdown');
-      const recipeNameText = dropdown.options[dropdown.selectedIndex].text;
-      const payload = {
-        action: 'logBrew',
-        payload: {
-          beanName: document.getElementById('brewBean').value,
-          recipeName: recipeNameText, 
-          rating: document.getElementById('rating').value
-        }
-      };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(() => status.innerText = '✅ Brew Logged!')
-        .catch(() => status.innerText = '❌ Error.');
-    }
-
-    function sendBeanData() {
+    function sendBeanData() { /* ... kept exactly the same ... */ 
       const status = document.getElementById('beanStatus');
       status.innerText = 'Saving...';
       const payload = {
         action: 'addBean',
-        payload: {
-          beanName: document.getElementById('beanName').value,
-          roaster: document.getElementById('roaster').value,
-          roastDate: document.getElementById('roastDate').value
-        }
+        payload: { beanName: document.getElementById('beanName').value, roaster: document.getElementById('roaster').value, roastDate: document.getElementById('roastDate').value }
       };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(() => status.innerText = '✅ Bean saved!')
-        .catch(() => status.innerText = '❌ Error.');
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(res => res.json()).then(() => status.innerText = '✅ Bean saved!').catch(() => status.innerText = '❌ Error.');
     }
   </script>
 </body>
