@@ -215,23 +215,52 @@
 
     // 4. DATA REFRESH (The Waiter)
     function refreshAllData() {
-      if (!currentUser) return;
-      
-      // Fetch Recipes
-      fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`)
-        .then(res => res.json())
-        .then(data => {
-          allRecipes = data.data || [];
-          renderRecipeList();
-        }).catch(err => console.error("Recipe Fetch Fail:", err));
+  console.log("--- DEBUG START ---");
+  console.log("Current User logged in as:", currentUser);
 
-      // Fetch Beans
-      fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`)
-        .then(res => res.json())
-        .then(data => {
-          allBeans = data.data || [];
-          renderBeanList();
-        }).catch(err => console.error("Bean Fetch Fail:", err));
+  // Fetch Recipes
+  fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Recipes received from Google:", data.data); // Look at this in Console!
+      allRecipes = data.data || [];
+      renderRecipeList(); // Helper to draw the list
+    });
+
+  // Fetch Beans
+  fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Beans received from Google:", data.data); // Look at this in Console!
+      allBeans = data.data || [];
+      renderBeanList(); // Helper to draw the list
+    });
+}
+
+// These helpers make sure the drawing logic is separated and clean
+function renderRecipeList() {
+  const l = document.getElementById('recipeListContainer');
+  const d = document.getElementById('activeRecipeDropdown');
+  d.innerHTML = '<option value="">-- Choose Recipe --</option>'; 
+  l.innerHTML = '';
+  
+  allRecipes.slice().reverse().forEach((row, i) => {
+    const originalIdx = allRecipes.length - 1 - i;
+    d.innerHTML += `<option value="${originalIdx}">${row[1]}</option>`;
+    l.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]} | ${row[3]}g</div></div>`;
+  });
+}
+
+function renderBeanList() {
+  const bl = document.getElementById('pantryListContainer');
+  const bd = document.getElementById('brewBeanDropdown');
+  bd.innerHTML = '<option value="">-- Choose Bean --</option>'; 
+  bl.innerHTML = '';
+  
+  allBeans.slice().reverse().forEach(row => {
+    bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
+    bl.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]}</div></div>`;
+  });
 
       // Fetch Feed
       fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`)
@@ -297,5 +326,4 @@
     }
   </script>
 </body>
-
 </html>
