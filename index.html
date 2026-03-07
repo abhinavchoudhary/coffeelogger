@@ -154,9 +154,9 @@
     <button class="logout-btn" onclick="logout()">Logout / Switch User</button>
   </div>
 
-  <script>
-    // ⚠️ REPLACE WITH YOUR URL AND PASSWORD
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
+ <script>
+    // ⚠️ CONFIGURATION
+    const SCRIPT_URL = 'YOUR_WEB_APP_URL_GOES_HERE'; // Ensure this ends in /exec
     const MASTER_PASSWORD = 'coffee-rocks'; 
 
     let currentUser = "";
@@ -164,10 +164,12 @@
     let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
     let totalS = 0, timerInt = null;
 
-    // LOGIN & AUTH
+    // 1. THE LOGIN GATEKEEPER
     function checkLogin() {
+      console.log("Attempting login...");
       const u = document.getElementById('usernameInput').value;
       const p = document.getElementById('passwordInput').value;
+
       if (p === MASTER_PASSWORD && u.trim() !== "") {
         currentUser = u;
         localStorage.setItem('coffeeUser', u);
@@ -175,87 +177,68 @@
         initApp();
       } else {
         document.getElementById('loginError').innerText = "Wrong password or name.";
+        console.warn("Login failed: Incorrect credentials.");
       }
     }
 
-    function logout() {
-      localStorage.clear();
-      location.reload();
-    }
-
-    window.onload = function() {
-      const u = localStorage.getItem('coffeeUser');
-      const p = localStorage.getItem('coffeePass');
-      if (u && p === MASTER_PASSWORD) { currentUser = u; initApp(); }
-    };
-
+    // 2. THE APP INITIALIZER
     function initApp() {
+      console.log("Initializing App for: " + currentUser);
       document.getElementById('loginPage').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
       refreshAllData();
     }
 
-    // DATA FETCHING (Now with robust user filtering)
-    function refreshAllData() {
-      console.log("Refreshing data for user: " + currentUser);
+    // 3. ON LOAD LOGIC
+    window.onload = function() {
+      console.log("Page loaded. Checking for saved session...");
+      const u = localStorage.getItem('coffeeUser');
+      const p = localStorage.getItem('coffeePass');
+      
+      // Only auto-login if the password STILL matches the code
+      if (u && p === MASTER_PASSWORD) { 
+        console.log("Saved session found for: " + u);
+        currentUser = u; 
+        initApp(); 
+      } else {
+        console.log("No valid session found. Showing login screen.");
+        localStorage.clear(); // Clear any old/broken keys
+        document.getElementById('loginPage').style.display = 'flex';
+      }
+    };
 
-      // 1. Fetch Recipes
+    function logout() {
+      console.log("Logging out...");
+      localStorage.clear();
+      location.reload();
+    }
+
+    // 4. DATA REFRESH (The Waiter)
+    function refreshAllData() {
+      if (!currentUser) return;
+      
+      // Fetch Recipes
       fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`)
         .then(res => res.json())
         .then(data => {
           allRecipes = data.data || [];
-          const d = document.getElementById('activeRecipeDropdown'); 
-          const l = document.getElementById('recipeListContainer');
-          d.innerHTML = '<option value="">-- Choose Recipe --</option>'; 
-          l.innerHTML = '';
-          
-          allRecipes.slice().reverse().forEach((row, i) => {
-            const originalIdx = allRecipes.length - 1 - i;
-            d.innerHTML += `<option value="${originalIdx}">${row[1]}</option>`;
-            l.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]} | ${row[3]}g</div></div>`;
-          });
-        }).catch(e => console.error("Recipe Fetch Error:", e));
+          renderRecipeList();
+        }).catch(err => console.error("Recipe Fetch Fail:", err));
 
-      // 2. Fetch Beans
+      // Fetch Beans
       fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`)
         .then(res => res.json())
         .then(data => {
           allBeans = data.data || [];
-          const bd = document.getElementById('brewBeanDropdown'); 
-          const bl = document.getElementById('pantryListContainer');
-          bd.innerHTML = '<option value="">-- Choose Bean --</option>'; 
-          bl.innerHTML = '';
+          renderBeanList();
+        }).catch(err => console.error("Bean Fetch Fail:", err));
 
-          allBeans.slice().reverse().forEach(row => {
-            bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
-            bl.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]}</div><div class="detail-text">Roasted: ${new Date(row[3]).toLocaleDateString()}</div></div>`;
-          });
-        }).catch(e => console.error("Bean Fetch Error:", e));
-        
-        // 3. Fetch Feed
-        // (Similar block for Feed...)
-    }
-
-      // 3. Feed
-      fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => {
-        const fc = document.getElementById('brewFeedContainer');
-        fc.innerHTML = '';
-        if (!data.data || data.data.length === 0) { fc.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">No brew history yet.</p>'; return; }
-        const tlWrap = document.createElement('div'); tlWrap.className = 'timeline';
-        data.data.slice().reverse().forEach(row => {
-          const dt = new Date(row[0]);
-          tlWrap.innerHTML += `
-            <div class="timeline-item">
-              <div class="timeline-card">
-                <div class="timeline-date">${dt.toLocaleDateString()} ${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
-                <div class="feed-title">${row[2]}</div>
-                <div class="detail-text">☕ Bean: ${row[1]}</div>
-                <div class="detail-text">${"⭐".repeat(row[3])}</div>
-              </div>
-            </div>`;
-        });
-        fc.appendChild(tlWrap);
-      });
+      // Fetch Feed
+      fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`)
+        .then(res => res.json())
+        .then(data => {
+          renderFeed(data.data || []);
+        }).catch(err => console.error("Feed Fetch Fail:", err));
     }
 
     // UI LOGIC
