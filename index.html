@@ -5,225 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Private Brew</title>
   <link rel="icon" href="https://fav.farm/🫘" />
-
   <style>
-    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; color: #333; }
+    /* ... Keep all your previous Helvetica, Timeline, and Card styles here ... */
+    body { font-family: "Helvetica Neue", Helvetica, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; }
+    h1 { text-align: center; color: #5c4033; font-weight: bold; }
     
-    /* HEADER & HELP BUTTON */
-    .header-area { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 30px; }
-    h1 { margin: 0; color: #5c4033; font-weight: bold; font-style: normal; letter-spacing: -0.5px; }
-    .help-btn { position: absolute; right: 0; background: #e0d4c8; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-weight: bold; color: #5c4033; }
-
-    /* MODAL (THE GLASS LAYER) */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 15px; position: relative; }
-    .modal-content h2 { color: #5c4033; margin-top: 0; }
-    .modal-content ul { padding-left: 20px; }
-    .modal-content li { margin-bottom: 10px; font-size: 14px; line-height: 1.5; }
-    .close-modal { background: #5c4033; color: white; border: none; padding: 10px 20px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-    /* REST OF STYLES (Helvetica & Detail) */
-    .nav-bar { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
-    .nav-btn { flex: 1; min-width: 80px; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; font-size: 14px; }
-    .nav-btn.active-btn { background: #5c4033; color: white; }
+    /* LOGIN SCREEN STYLES */
+    #loginPage { position: fixed; top:0; left:0; width:100%; height:100%; background:#faf8f5; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 80%; max-width: 300px; }
+    
+    /* Rest of app UI... */
     .page { display: none; } .page.active { display: block; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input, select { display: block; width: 100%; margin: 10px 0 20px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; }
-    button.action-btn { display: block; width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 10px; font-family: inherit; }
-    button.action-btn.alt { background: #8d6e63; }
-    .timer-container { background: #f9f6f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0d4c8; }
-    .phase-name { font-size: 18px; text-align: center; color: #e65100; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-    .phase-timer { font-size: 60px; font-weight: bold; text-align: center; color: #3e2723; line-height: 1; }
-    .total-timer { font-size: 16px; text-align: center; color: #888; margin-top: 10px; font-weight: bold; }
-    .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
-    .row { display: flex; gap: 10px; }
-    .list-header { border-top: 2px solid #eee; margin-top: 30px; padding-top: 20px; color: #5c4033; text-align: center; font-weight: bold; }
-    .timeline { border-left: 3px solid #e0d4c8; padding-left: 25px; margin-left: 15px; position: relative; margin-top: 20px; }
-    .timeline-item { position: relative; margin-bottom: 25px; }
-    .timeline-item::before { content: ''; position: absolute; left: -34px; top: 0; width: 14px; height: 14px; background: #5c4033; border-radius: 50%; border: 3px solid #faf8f5; }
-    .timeline-card, .feed-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 15px; }
-    .data-label { font-weight: bold; color: #8d6e63; font-size: 11px; text-transform: uppercase; margin-top: 8px; display: block; }
-    .timeline-date { font-weight: bold; color: #8d6e63; font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; text-transform: uppercase; }
-    .feed-title { font-weight: bold; font-size: 18px; color: #3e2723; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
-    .detail-text { font-size: 14px; color: #555; margin-bottom: 4px; line-height: 1.4; }
+    .nav-bar { display: none; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; } /* Hidden until login */
+    .nav-btn { flex: 1; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .nav-btn.active-btn { background: #5c4033; color: white; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    input, select { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    button.action-btn { width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    /* ... (Include previous timeline/feed styles) ... */
   </style>
 </head>
 <body>
 
-  <div id="helpModal" class="modal-overlay">
-    <div class="modal-content">
-      <h2>App Guide ☕</h2>
-      <ul>
-        <li><strong>Pantry:</strong> Register your coffee bags. View roaster and roast dates in the list below.</li>
-        <li><strong>Recipes:</strong> Define your brew steps in seconds. Phase durations are saved for the smart timer.</li>
-        <li><strong>Brew Station:</strong> Select a recipe to load the 3-phase countdown. <strong>Start</strong> the timer to begin.</li>
-        <li><strong>History:</strong> Log your bean, recipe, and rating to see your connected timeline in the <strong>Feed</strong>.</li>
-      </ul>
-      <button class="close-modal" onclick="toggleHelp()">Got it!</button>
+  <div id="loginPage">
+    <div class="login-card">
+      <h2 style="text-align:center; color:#5c4033;">Welcome</h2>
+      <input type="text" id="usernameInput" placeholder="Your Name">
+      <input type="password" id="passwordInput" placeholder="Password">
+      <button class="action-btn" onclick="checkLogin()">Enter Lab</button>
+      <p id="loginError" style="color:red; font-size:12px; text-align:center;"></p>
     </div>
   </div>
 
-  <div class="header-area">
+  <div id="mainApp" style="display:none;">
     <h1>My Private Brew</h1>
-    <button class="help-btn" onclick="toggleHelp()">?</button>
-  </div>
-
-  <div class="nav-bar">
-    <button id="btn-brewPage" class="nav-btn active-btn" onclick="switchPage('brewPage')">Brew</button>
-    <button id="btn-feedPage" class="nav-btn" onclick="switchPage('feedPage')">Feed</button>
-    <button id="btn-recipePage" class="nav-btn" onclick="switchPage('recipePage')">Recipes</button>
-    <button id="btn-pantryPage" class="nav-btn" onclick="switchPage('pantryPage')">Pantry</button>
-  </div>
-
-  <div id="brewPage" class="page active">
-    <div class="card">
-      <select id="activeRecipeDropdown" onchange="updateTimerSettings()"><option value="">Loading recipes...</option></select>
-      <div class="timer-container">
-        <div class="phase-name" id="phaseNameDisplay">Ready</div>
-        <div class="phase-timer" id="phaseTimeDisplay">0:00</div>
-        <div class="total-timer" id="totalTimeDisplay">Total: 0:00</div>
-      </div>
-      <div class="row">
-        <button class="action-btn" id="startBtn" onclick="startTimer()">▶ Start</button>
-        <button class="action-btn alt" onclick="stopTimer()">⏹ Stop</button>
-      </div>
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-      <h3>Log Brew</h3>
-      <select id="brewBeanDropdown"><option value="">Loading beans...</option></select>
-      <select id="brewRating">
-        <option value="5">⭐⭐⭐⭐⭐</option>
-        <option value="4">⭐⭐⭐⭐</option>
-        <option value="3">⭐⭐⭐</option>
-        <option value="2">⭐⭐</option>
-        <option value="1">⭐</option>
-      </select>
-      <button class="action-btn" onclick="logBrew()">Save to Feed</button>
-      <p class="status" id="brewStatus"></p>
+    <div class="nav-bar" id="appNav" style="display:flex;">
+      <button id="btn-brewPage" class="nav-btn active-btn" onclick="switchPage('brewPage')">Brew</button>
+      <button id="btn-feedPage" class="nav-btn" onclick="switchPage('feedPage')">Feed</button>
+      <button id="btn-recipePage" class="nav-btn" onclick="switchPage('recipePage')">Recipes</button>
+      <button id="btn-pantryPage" class="nav-btn" onclick="switchPage('pantryPage')">Pantry</button>
     </div>
-  </div>
 
-  <div id="feedPage" class="page"><div id="brewFeedContainer" style="margin-top:20px;"></div></div>
-  
-  <div id="recipePage" class="page">
-    <div class="card">
-      <h2>Create Recipe</h2>
-      <input type="text" id="recipeName" placeholder="Recipe Name">
-      <select id="recipeMethod">
-        <option value="V60">V60</option>
-        <option value="AeroPress">AeroPress</option>
-        <option value="Inverted AeroPress">Inverted AeroPress</option>
-      </select>
-      <input type="number" id="coffeeGrams" placeholder="Coffee (grams)">
-      <div class="row">
-        <input type="number" id="step1Time" placeholder="P1 (s)"><input type="number" id="step2Time" placeholder="P2 (s)"><input type="number" id="step3Time" placeholder="P3 (s)">
+    <div id="brewPage" class="page active">
+      <div class="card">
+        <select id="activeRecipeDropdown" onchange="updateTimerSettings()"><option value="">Loading...</option></select>
+        <button class="action-btn" onclick="logBrew()">Save to Feed</button>
       </div>
-      <button class="action-btn alt" onclick="saveRecipe()">Save Recipe</button>
-      <p class="status" id="recipeStatus"></p>
     </div>
-    <h3 class="list-header">Recipes</h3><div id="recipeListContainer"></div>
-  </div>
-
-  <div id="pantryPage" class="page">
-    <div class="card">
-      <h2>Add Bean</h2>
-      <input type="text" id="beanName" placeholder="Bean Name"><input type="text" id="roaster" placeholder="Roaster"><input type="date" id="roastDate">
-      <button class="action-btn alt" onclick="sendBeanData()">Save Bean</button>
-      <p class="status" id="beanStatus"></p>
+    
     </div>
-    <h3 class="list-header">Pantry</h3><div id="pantryListContainer"></div>
-  </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3g5UCtZmWPFYoH_8TnxLGxmtEhumKBczSESJzwmGxeSjfUjeRD2bGBhLkKlL1T5mW/exec';
+    const SCRIPT_URL = 'YOUR_WEB_APP_URL_GOES_HERE';
+    const MASTER_PASSWORD = "coffee-rocks"; // 👈 Set your secret password here!
 
-    // MODAL TOGGLE
-    function toggleHelp() {
-      const modal = document.getElementById('helpModal');
-      modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    let currentUser = "";
+
+    function checkLogin() {
+      const user = document.getElementById('usernameInput').value;
+      const pass = document.getElementById('passwordInput').value;
+
+      if (pass === MASTER_PASSWORD && user.trim() !== "") {
+        currentUser = user;
+        // Save to browser memory
+        localStorage.setItem('coffeeUser', user);
+        localStorage.setItem('coffeePass', pass);
+        showApp();
+      } else {
+        document.getElementById('loginError').innerText = "Invalid user or password.";
+      }
     }
 
-    function switchPage(id) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-btn'));
-      document.getElementById(id).classList.add('active');
-      document.getElementById('btn-' + id).classList.add('active-btn');
+    function showApp() {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      loadUserData(); // Start fetching data for THIS user
     }
-
-    let allRecipes = [], allBeans = [], allBrews = [];
-    let endPhase1 = 0, endPhase2 = 0, endPhase3 = 0;
 
     window.onload = function() {
-      fetch(SCRIPT_URL + "?action=getRecipes").then(res => res.json()).then(data => {
-        allRecipes = data.data; 
-        const d = document.getElementById('activeRecipeDropdown'); const l = document.getElementById('recipeListContainer');
-        d.innerHTML = '<option value="">-- Choose Recipe --</option>'; l.innerHTML = '';
-        allRecipes.slice().reverse().forEach((row, i) => {
-          d.innerHTML += `<option value="${allRecipes.length - 1 - i}">${row[1]}</option>`;
-          l.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><span class="data-label">Method</span><div class="detail-text">${row[2]} (${row[3]}g)</div><span class="data-label">Steps</span><div class="detail-text">${row[4]}s | ${row[5]}s | ${row[6]}s</div></div>`;
-        });
-      });
-
-      fetch(SCRIPT_URL + "?action=getBeans").then(res => res.json()).then(data => {
-        allBeans = data.data;
-        const bd = document.getElementById('brewBeanDropdown'); const bl = document.getElementById('pantryListContainer');
-        bd.innerHTML = '<option value="">-- Choose Bean --</option>'; bl.innerHTML = '';
-        allBeans.slice().reverse().forEach(row => {
-          bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
-          bl.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><span class="data-label">Roaster</span><div class="detail-text">${row[2]}</div><span class="data-label">Roast Date</span><div class="detail-text">${new Date(row[3]).toLocaleDateString()}</div></div>`;
-        });
-      });
-
-      fetch(SCRIPT_URL + "?action=getBrews").then(res => res.json()).then(data => {
-        allBrews = data.data; const fc = document.getElementById('brewFeedContainer');
-        if (allBrews.length === 0) { fc.innerHTML = '<p style="text-align:center;">Empty history.</p>'; return; }
-        fc.innerHTML = '<div class="timeline" id="brewTimeline"></div>'; const tl = document.getElementById('brewTimeline');
-        allBrews.slice().reverse().forEach(row => {
-          const dt = new Date(row[0]);
-          tl.innerHTML += `<div class="timeline-item"><div class="timeline-card"><div class="timeline-date">${dt.toLocaleDateString()} ${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div><div class="timeline-title">${row[2]}</div><div class="detail-text">☕ ${row[1]}</div><div class="detail-text">${"⭐".repeat(row[3])}</div></div></div>`;
-        });
-      });
+      // Check if they logged in recently
+      const savedUser = localStorage.getItem('coffeeUser');
+      const savedPass = localStorage.getItem('coffeePass');
+      
+      if (savedUser && savedPass === MASTER_PASSWORD) {
+        currentUser = savedUser;
+        showApp();
+      }
     };
 
-    function updateTimerSettings() {
-      const idx = document.getElementById('activeRecipeDropdown').value; if (idx === "") return;
-      const row = allRecipes[idx]; const s1 = parseInt(row[4])||0; const s2 = parseInt(row[5])||0; const s3 = parseInt(row[6])||0;
-      endPhase1 = s1; endPhase2 = s1+s2; endPhase3 = s1+s2+s3;
-      document.getElementById('phaseNameDisplay').innerText = "Ready"; document.getElementById('phaseTimeDisplay').innerText = formatTime(s1);
+    function loadUserData() {
+      // We append "&user=Name" to every GET request
+      fetch(SCRIPT_URL + "?action=getRecipes&user=" + currentUser)
+        .then(res => res.json())
+        .then(data => { /* Render recipes... */ });
+        
+      // Repeat for Beans and Brews...
     }
 
-    let totalS = 0, timerInt = null;
-    function formatTime(s) { const m = Math.floor(s/60); const sc = s%60; return m+":"+(sc<10?"0":"")+sc; }
-
-    function startTimer() {
-      if (timerInt || endPhase1 === 0) return; document.getElementById('startBtn').disabled = true;
-      timerInt = setInterval(() => {
-        totalS++; document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)}`;
-        if (totalS <= endPhase1) { document.getElementById('phaseNameDisplay').innerText = "Phase 1"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1-totalS); }
-        else if (totalS <= endPhase2) { document.getElementById('phaseNameDisplay').innerText = "Phase 2"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2-totalS); }
-        else if (totalS <= endPhase3) { document.getElementById('phaseNameDisplay').innerText = "Phase 3"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3-totalS); }
-        else { document.getElementById('phaseNameDisplay').innerText = "Finished"; stopTimer(); }
-      }, 1000);
-    }
-    function stopTimer() { clearInterval(timerInt); timerInt = null; document.getElementById('startBtn').disabled = false; }
-
-    function logBrew() {
-      const s = document.getElementById('brewStatus'); s.innerText = 'Saving...';
-      const r = document.getElementById('activeRecipeDropdown');
-      const payload = { action: 'logBrew', payload: { beanName: document.getElementById('brewBeanDropdown').value, recipeName: r.options[r.selectedIndex].text, rating: document.getElementById('brewRating').value } };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => { s.innerText = '✅ Saved!'; }).catch(() => s.innerText = '❌ Error.');
-    }
-
-    function saveRecipe() {
-      const s = document.getElementById('recipeStatus'); s.innerText = 'Saving...';
-      const payload = { action: 'addRecipe', payload: { recipeName: document.getElementById('recipeName').value, method: document.getElementById('recipeMethod').value, coffeeGrams: document.getElementById('coffeeGrams').value, step1: document.getElementById('step1Time').value, step2: document.getElementById('step2Time').value, step3: document.getElementById('step3Time').value } };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => s.innerText = '✅ Saved!').catch(() => s.innerText = '❌ Error.');
-    }
-
-    function sendBeanData() {
-      const s = document.getElementById('beanStatus'); s.innerText = 'Saving...';
-      const payload = { action: 'addBean', payload: { beanName: document.getElementById('beanName').value, roaster: document.getElementById('roaster').value, roastDate: document.getElementById('roastDate').value } };
-      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => s.innerText = '✅ Saved!').catch(() => s.innerText = '❌ Error.');
-    }
+    // In your POST functions (saveRecipe, logBrew, etc.), 
+    // simply add: user: currentUser to the payload!
   </script>
 </body>
 </html>
