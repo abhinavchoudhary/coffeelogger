@@ -215,59 +215,56 @@
 
     // 4. DATA REFRESH (The Waiter)
     function refreshAllData() {
-  console.log("--- DEBUG START ---");
-  console.log("Current User logged in as:", currentUser);
+      if (!currentUser) return;
+      
+      // 1. Fetch Recipes
+      fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`).then(res => res.json()).then(data => {
+        allRecipes = data.data || [];
+        renderRecipeList();
+      });
 
-  // Fetch Recipes
-  fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log("Recipes received from Google:", data.data); // Look at this in Console!
-      allRecipes = data.data || [];
-      renderRecipeList(); // Helper to draw the list
-    });
+      // 2. Fetch Beans
+      fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`).then(res => res.json()).then(data => {
+        allBeans = data.data || [];
+        renderBeanList();
+      });
 
-  // Fetch Beans
-  fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log("Beans received from Google:", data.data); // Look at this in Console!
-      allBeans = data.data || [];
-      renderBeanList(); // Helper to draw the list
-    });
-}
+      // 3. Fetch Feed (THE FIX)
+      fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => {
+        const brews = data.data || [];
+        renderFeed(brews);
+      });
+    }
 
-// These helpers make sure the drawing logic is separated and clean
-function renderRecipeList() {
-  const l = document.getElementById('recipeListContainer');
-  const d = document.getElementById('activeRecipeDropdown');
-  d.innerHTML = '<option value="">-- Choose Recipe --</option>'; 
-  l.innerHTML = '';
-  
-  allRecipes.slice().reverse().forEach((row, i) => {
-    const originalIdx = allRecipes.length - 1 - i;
-    d.innerHTML += `<option value="${originalIdx}">${row[1]}</option>`;
-    l.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]} | ${row[3]}g</div></div>`;
-  });
-}
+    function renderFeed(brews) {
+      const fc = document.getElementById('brewFeedContainer');
+      fc.innerHTML = '<h3 style="text-align:center; color:#5c4033;">Your Brew History</h3>';
+      
+      if (brews.length === 0) {
+        fc.innerHTML += '<p style="text-align:center; color:#999; margin-top:20px;">No brew history yet for ' + currentUser + '.</p>';
+        return;
+      }
 
-function renderBeanList() {
-  const bl = document.getElementById('pantryListContainer');
-  const bd = document.getElementById('brewBeanDropdown');
-  bd.innerHTML = '<option value="">-- Choose Bean --</option>'; 
-  bl.innerHTML = '';
-  
-  allBeans.slice().reverse().forEach(row => {
-    bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
-    bl.innerHTML += `<div class="feed-card"><div class="feed-title">${row[1]}</div><div class="detail-text">${row[2]}</div></div>`;
-  });
+      const tlWrap = document.createElement('div');
+      tlWrap.className = 'timeline';
+      
+      // Flip the list so the newest brew is at the top
+      brews.slice().reverse().forEach(row => {
+        const dt = new Date(row[0]);
+        const dateStr = dt.toLocaleDateString() + " " + dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        const stars = "⭐".repeat(row[3]);
 
-      // Fetch Feed
-      fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`)
-        .then(res => res.json())
-        .then(data => {
-          renderFeed(data.data || []);
-        }).catch(err => console.error("Feed Fetch Fail:", err));
+        tlWrap.innerHTML += `
+          <div class="timeline-item">
+            <div class="timeline-card">
+              <div class="timeline-date">${dateStr}</div>
+              <div class="feed-title">${row[2]}</div>
+              <div class="detail-text">☕ Bean: ${row[1]}</div>
+              <div class="detail-text">${stars}</div>
+            </div>
+          </div>`;
+      });
+      fc.appendChild(tlWrap);
     }
 
     // UI LOGIC
@@ -294,13 +291,32 @@ function renderBeanList() {
     function formatTime(s) { const m = Math.floor(s/60); const sc = s%60; return m+":"+(sc<10?"0":"")+sc; }
 
     function startTimer() {
-      if (timerInt || endPhase1 === 0) return; document.getElementById('startBtn').disabled = true;
+      if (timerInt || endPhase1 === 0) return; 
+      document.getElementById('startBtn').disabled = true;
+
       timerInt = setInterval(() => {
-        totalS++; document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)}`;
-        if (totalS <= endPhase1) { document.getElementById('phaseNameDisplay').innerText = "Phase 1"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1-totalS); }
-        else if (totalS <= endPhase2) { document.getElementById('phaseNameDisplay').innerText = "Phase 2"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2-totalS); }
-        else if (totalS <= endPhase3) { document.getElementById('phaseNameDisplay').innerText = "Phase 3"; document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3-totalS); }
-        else { document.getElementById('phaseNameDisplay').innerText = "Finished"; stopTimer(); }
+        totalS++;
+        
+        // THE FIX: "Current Time / Total Time" Format
+        const currentTimeFormatted = formatTime(totalS);
+        const totalTimeFormatted = formatTime(endPhase3);
+        document.getElementById('totalTimeDisplay').innerText = `Total: ${currentTimeFormatted} / ${totalTimeFormatted}`;
+
+        // Phase checking
+        if (totalS <= endPhase1) {
+          document.getElementById('phaseNameDisplay').innerText = "Phase 1";
+          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1 - totalS);
+        } else if (totalS <= endPhase2) {
+          document.getElementById('phaseNameDisplay').innerText = "Phase 2";
+          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase2 - totalS);
+        } else if (totalS <= endPhase3) {
+          document.getElementById('phaseNameDisplay').innerText = "Phase 3";
+          document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase3 - totalS);
+        } else {
+          document.getElementById('phaseNameDisplay').innerText = "Finished";
+          document.getElementById('phaseTimeDisplay').innerText = "0:00";
+          stopTimer();
+        }
       }, 1000);
     }
     function stopTimer() { clearInterval(timerInt); timerInt = null; document.getElementById('startBtn').disabled = false; }
