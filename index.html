@@ -297,12 +297,11 @@
       timerInt = setInterval(() => {
         totalS++;
         
-        // THE FIX: "Current Time / Total Time" Format
-        const currentTimeFormatted = formatTime(totalS);
-        const totalTimeFormatted = formatTime(endPhase3);
-        document.getElementById('totalTimeDisplay').innerText = `Total: ${currentTimeFormatted} / ${totalTimeFormatted}`;
+        // UPGRADED FORMAT: "Current / Total"
+        const currentTime = formatTime(totalS);
+        const totalMaxTime = formatTime(endPhase3);
+        document.getElementById('totalTimeDisplay').innerText = `Total: ${currentTime} / ${totalMaxTime}`;
 
-        // Phase checking
         if (totalS <= endPhase1) {
           document.getElementById('phaseNameDisplay').innerText = "Phase 1";
           document.getElementById('phaseTimeDisplay').innerText = formatTime(endPhase1 - totalS);
