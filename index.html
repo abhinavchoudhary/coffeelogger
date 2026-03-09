@@ -6,42 +6,60 @@
   <title>My Private Brew</title>
   <link rel="icon" href="https://fav.farm/🫘" />
   <style>
-    body { font-family: "Helvetica Neue", Helvetica, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; color: #333; }
-    h1 { text-align: center; color: #5c4033; font-weight: bold; margin-bottom: 20px; }
+    /* THE THEME: HELVETICA & BOLD */
+    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #faf8f5; color: #333; }
+    h1 { text-align: center; color: #5c4033; font-weight: bold; font-style: normal; letter-spacing: -0.5px; margin-bottom: 30px; }
+    
+    /* LOGIN & MODALS */
     #loginPage { position: fixed; top:0; left:0; width:100%; height:100%; background:#faf8f5; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 85%; max-width: 320px; text-align: center; }
+
+    /* NAVIGATION */
     .nav-bar { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
-    .nav-btn { flex: 1; min-width: 80px; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; font-size: 14px; }
+    .nav-btn { flex: 1; min-width: 80px; padding: 10px; background: #e0d4c8; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #5c4033; font-size: 14px; text-align: center; }
     .nav-btn.active-btn { background: #5c4033; color: white; }
+    
     .page { display: none; } .page.active { display: block; }
     .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input, select { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; font-family: inherit; }
-    button.action-btn { width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    input, select { display: block; width: 100%; margin: 10px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; }
+    button.action-btn { width: 100%; padding: 15px; background: #5c4033; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    
+    /* TIMER */
     .timer-container { background: #f9f6f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0d4c8; text-align: center; }
-    .phase-name { font-size: 18px; color: #e65100; font-weight: bold; text-transform: uppercase; }
-    .phase-timer { font-size: 60px; font-weight: bold; color: #3e2723; }
-    .total-timer { font-size: 14px; color: #888; font-weight: bold; }
-    .timeline { border-left: 3px solid #e0d4c8; padding-left: 25px; margin-left: 15px; position: relative; }
+    .phase-name { font-size: 18px; color: #e65100; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+    .phase-timer { font-size: 60px; font-weight: bold; color: #3e2723; line-height: 1; }
+    .total-timer { font-size: 14px; color: #888; margin-top: 10px; font-weight: bold; }
+
+    /* FEED & LISTS */
+    .timeline { border-left: 3px solid #e0d4c8; padding-left: 25px; margin-left: 15px; position: relative; margin-top: 20px; }
     .timeline-item { position: relative; margin-bottom: 25px; }
     .timeline-item::before { content: ''; position: absolute; left: -34px; top: 0; width: 14px; height: 14px; background: #5c4033; border-radius: 50%; border: 3px solid #faf8f5; }
-    .timeline-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    .delete-btn { color: #d32f2f; background: none; border: 1px solid #ffcdd2; border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; margin-top: 10px; float: right; }
+    .timeline-card, .feed-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 15px; }
+    .timeline-date { font-weight: bold; color: #8d6e63; font-size: 12px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; text-transform: uppercase; }
+    .feed-title { font-weight: bold; font-size: 17px; color: #3e2723; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
+    .data-label { font-weight: bold; color: #8d6e63; font-size: 11px; text-transform: uppercase; margin-top: 8px; display: block; }
+    .detail-text { font-size: 14px; color: #555; margin-bottom: 2px; line-height: 1.4; }
+    .delete-btn { color: #d32f2f; background: none; border: 1px solid #ffcdd2; border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; margin-top: -5px; float: right; }
     .step-input-row { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; }
+    .status { text-align: center; margin-top: 10px; font-weight: bold; color: #5c4033; }
+    .list-header { border-top: 2px solid #eee; margin-top: 30px; padding-top: 20px; color: #5c4033; text-align: center; font-weight: bold; }
   </style>
 </head>
 <body>
 
   <div id="loginPage">
     <div class="login-card">
-      <h2>Coffee Lab Login</h2>
+      <h2 style="color:#5c4033; margin-top:0;">Coffee Lab Login</h2>
       <input type="text" id="usernameInput" placeholder="User Name">
       <input type="password" id="passwordInput" placeholder="Password">
       <button class="action-btn" onclick="checkLogin()">Enter</button>
+      <p id="loginError" style="color:red; font-size:12px; margin-top:10px;"></p>
     </div>
   </div>
 
   <div id="mainApp" style="display:none;">
     <h1>My Private Brew</h1>
+    
     <div class="nav-bar">
       <button id="btn-brewPage" class="nav-btn active-btn" onclick="switchPage('brewPage')">Brew</button>
       <button id="btn-feedPage" class="nav-btn" onclick="switchPage('feedPage')">Feed</button>
@@ -63,7 +81,13 @@
         </div>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
         <select id="brewBeanDropdown"><option value="">Loading beans...</option></select>
-        <select id="brewRating"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select>
+        <select id="brewRating">
+          <option value="5">⭐⭐⭐⭐⭐</option>
+          <option value="4">⭐⭐⭐⭐</option>
+          <option value="3">⭐⭐⭐</option>
+          <option value="2">⭐⭐</option>
+          <option value="1">⭐</option>
+        </select>
         <button class="action-btn" onclick="logBrew()">Save Brew</button>
         <p class="status" id="brewStatus"></p>
       </div>
@@ -80,6 +104,7 @@
         <select id="recipeMethod">
           <option value="V60">V60</option>
           <option value="AeroPress">AeroPress</option>
+          <option value="Inverted AeroPress">Inverted AeroPress</option>
           <option value="French Press">French Press</option>
           <option value="Moka Pot">Moka Pot</option>
           <option value="Chemex">Chemex</option>
@@ -87,7 +112,7 @@
         </select>
         <input type="number" id="coffeeGrams" placeholder="Coffee (g)">
         
-        <label style="font-size:12px; font-weight:bold; color:#8d6e63;">NUMBER OF PHASES</label>
+        <label style="font-size:11px; font-weight:bold; color:#8d6e63;">NUMBER OF PHASES</label>
         <select id="numPhases" onchange="generateStepInputs()">
           <option value="2">2 Phases</option>
           <option value="3" selected>3 Phases</option>
@@ -103,7 +128,10 @@
 
     <div id="pantryPage" class="page">
       <div class="card">
-        <input type="text" id="beanName" placeholder="Bean Name"><input type="text" id="roaster" placeholder="Roaster"><input type="date" id="roastDate">
+        <h2>New Bean</h2>
+        <input type="text" id="beanName" placeholder="Bean Name">
+        <input type="text" id="roaster" placeholder="Roaster">
+        <input type="date" id="roastDate">
         <button class="action-btn" style="background:#8d6e63;" onclick="sendBeanData()">Save Bean</button>
       </div>
       <div id="pantryListContainer"></div>
@@ -118,7 +146,6 @@
     let allRecipes = [], allBeans = [], phaseEndMarkers = [];
     let totalS = 0, timerInt = null, totalMaxTime = 0;
 
-    // --- AUTH ---
     function checkLogin() {
       const u = document.getElementById('usernameInput').value;
       const p = document.getElementById('passwordInput').value;
@@ -127,21 +154,24 @@
         localStorage.setItem('coffeeUser', u);
         localStorage.setItem('coffeePass', p);
         initApp();
+      } else {
+        document.getElementById('loginError').innerText = "Incorrect login.";
       }
     }
+
     window.onload = function() {
       const u = localStorage.getItem('coffeeUser');
       const p = localStorage.getItem('coffeePass');
       if (u && p === MASTER_PASSWORD) { currentUser = u; initApp(); }
-      generateStepInputs(); // Initialize step inputs on first load
+      generateStepInputs();
     };
+
     function initApp() {
       document.getElementById('loginPage').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
       refreshAllData();
     }
 
-    // --- DYNAMIC PHASE GENERATOR ---
     function generateStepInputs() {
       const num = parseInt(document.getElementById('numPhases').value);
       const container = document.getElementById('stepInputsContainer');
@@ -155,50 +185,42 @@
       }
     }
 
-// --- UPDATED DATA FETCHING ---
+    // --- DATA FETCHING & PAINTING ---
     function refreshAllData() {
       if (!currentUser) return;
       
-      // 1. Fetch Recipes
+      // Fetch Recipes
       fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`).then(res => res.json()).then(data => {
         allRecipes = data.data || [];
         const d = document.getElementById('activeRecipeDropdown');
         d.innerHTML = '<option value="">-- Select Recipe --</option>';
         allRecipes.forEach((row, i) => d.innerHTML += `<option value="${i}">${row[1]}</option>`);
-        
-        // NEW: Trigger the list painter for Recipes
         renderRecipeList();
       });
 
-      // 2. Fetch Beans
+      // Fetch Beans
       fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`).then(res => res.json()).then(data => {
         allBeans = data.data || [];
         const bd = document.getElementById('brewBeanDropdown');
         bd.innerHTML = '<option value="">-- Select Bean --</option>';
         allBeans.forEach(row => bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`);
-        
-        // NEW: Trigger the list painter for Pantry
         renderBeanList();
       });
 
-      // 3. Fetch Feed
-      fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => renderFeed(data.data || []));
+      // Fetch Feed
+      fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => {
+        renderFeed(data.data || []);
+      });
     }
 
-    // --- NEW: THE MISSING LIST PAINTERS ---
     function renderRecipeList() {
       const container = document.getElementById('recipeListContainer');
       container.innerHTML = '<h3 class="list-header">Your Saved Recipes</h3>';
-      
-      if (allRecipes.length === 0) {
-        container.innerHTML += '<p style="text-align:center; color:#999;">No recipes found.</p>';
-        return;
-      }
+      if (allRecipes.length === 0) { container.innerHTML += '<p style="text-align:center; color:#999;">No recipes found.</p>'; return; }
 
       allRecipes.slice().reverse().forEach(row => {
-        // We filter out empty steps to only show active ones
+        // Step columns are E-I (index 4-8)
         const steps = [row[4], row[5], row[6], row[7], row[8]].filter(s => s !== "" && s !== 0);
-        
         container.innerHTML += `
           <div class="feed-card">
             <div class="feed-title">${row[1]}</div>
@@ -212,11 +234,7 @@
     function renderBeanList() {
       const container = document.getElementById('pantryListContainer');
       container.innerHTML = '<h3 class="list-header">Your Full Pantry</h3>';
-
-      if (allBeans.length === 0) {
-        container.innerHTML += '<p style="text-align:center; color:#999;">Pantry is empty.</p>';
-        return;
-      }
+      if (allBeans.length === 0) { container.innerHTML += '<p style="text-align:center; color:#999;">Pantry is empty.</p>'; return; }
 
       allBeans.slice().reverse().forEach(row => {
         container.innerHTML += `
@@ -227,21 +245,39 @@
           </div>`;
       });
     }
-    // --- TIMER LOGIC (Flexible Arrays) ---
+
+    function renderFeed(brews) {
+      const fc = document.getElementById('brewFeedContainer');
+      fc.innerHTML = '<h3 style="text-align:center; color:#5c4033;">Your Brew History</h3>';
+      if (!brews || brews.length === 0) { fc.innerHTML += '<p style="text-align:center; color:#999; margin-top:20px;">No history.</p>'; return; }
+      
+      const tlWrap = document.createElement('div'); tlWrap.className = 'timeline';
+      brews.slice().reverse().forEach(row => {
+        const dt = new Date(row[0]);
+        const dateStr = dt.toLocaleDateString() + " " + dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        tlWrap.innerHTML += `
+          <div class="timeline-item">
+            <div class="timeline-card">
+              <button class="delete-btn" onclick="deleteEntry('${row[0]}')">Delete</button>
+              <div class="timeline-date">${dateStr}</div>
+              <div class="feed-title">${row[2]}</div>
+              <div class="detail-text">☕ Bean: ${row[1]}</div>
+              <div class="detail-text">${"⭐".repeat(parseInt(row[3]) || 0)}</div>
+            </div>
+          </div>`;
+      });
+      fc.appendChild(tlWrap);
+    }
+
+    // --- TIMER PROGRESS LOGIC ---
     function updateTimerSettings() {
       const idx = document.getElementById('activeRecipeDropdown').value;
       if (idx === "") return;
       const r = allRecipes[idx];
-      
-      // We pull columns E through I (indexes 4 through 8)
       const steps = [r[4], r[5], r[6], r[7], r[8]].filter(s => s !== "" && s !== 0);
       
-      phaseEndMarkers = [];
-      let cumulative = 0;
-      steps.forEach(s => {
-        cumulative += parseInt(s);
-        phaseEndMarkers.push(cumulative);
-      });
+      phaseEndMarkers = []; let cumulative = 0;
+      steps.forEach(s => { cumulative += parseInt(s); phaseEndMarkers.push(cumulative); });
       
       totalMaxTime = phaseEndMarkers[phaseEndMarkers.length - 1];
       document.getElementById('phaseNameDisplay').innerText = "Ready";
@@ -254,11 +290,10 @@
       document.getElementById('startBtn').disabled = true;
       timerInt = setInterval(() => {
         totalS++;
+        // FIXED: Current / Total Format
         document.getElementById('totalTimeDisplay').innerText = `Total: ${formatTime(totalS)} / ${formatTime(totalMaxTime)}`;
         
-        // Find current phase
         let currentPhaseIdx = phaseEndMarkers.findIndex(m => totalS <= m);
-        
         if (currentPhaseIdx !== -1) {
           document.getElementById('phaseNameDisplay').innerText = `Phase ${currentPhaseIdx + 1}`;
           document.getElementById('phaseTimeDisplay').innerText = formatTime(phaseEndMarkers[currentPhaseIdx] - totalS);
@@ -299,6 +334,7 @@
       const payload = { beanName: document.getElementById('beanName').value, roaster: document.getElementById('roaster').value, roastDate: document.getElementById('roastDate').value };
       fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({action:'addBean', user:currentUser, payload: payload}) }).then(() => refreshAllData());
     }
+
     function switchPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-btn'));
