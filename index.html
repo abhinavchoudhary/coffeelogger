@@ -155,40 +155,78 @@
       }
     }
 
-    // --- DATA FETCHING ---
+// --- UPDATED DATA FETCHING ---
     function refreshAllData() {
+      if (!currentUser) return;
+      
+      // 1. Fetch Recipes
       fetch(`${SCRIPT_URL}?action=getRecipes&user=${currentUser}`).then(res => res.json()).then(data => {
         allRecipes = data.data || [];
         const d = document.getElementById('activeRecipeDropdown');
         d.innerHTML = '<option value="">-- Select Recipe --</option>';
         allRecipes.forEach((row, i) => d.innerHTML += `<option value="${i}">${row[1]}</option>`);
+        
+        // NEW: Trigger the list painter for Recipes
+        renderRecipeList();
       });
+
+      // 2. Fetch Beans
       fetch(`${SCRIPT_URL}?action=getBeans&user=${currentUser}`).then(res => res.json()).then(data => {
         allBeans = data.data || [];
         const bd = document.getElementById('brewBeanDropdown');
         bd.innerHTML = '<option value="">-- Select Bean --</option>';
         allBeans.forEach(row => bd.innerHTML += `<option value="${row[1]}">${row[1]}</option>`);
+        
+        // NEW: Trigger the list painter for Pantry
+        renderBeanList();
       });
+
+      // 3. Fetch Feed
       fetch(`${SCRIPT_URL}?action=getBrews&user=${currentUser}`).then(res => res.json()).then(data => renderFeed(data.data || []));
     }
 
-    function renderFeed(brews) {
-      const fc = document.getElementById('brewFeedContainer');
-      fc.innerHTML = '<h3 style="text-align:center;">History</h3>';
-      brews.slice().reverse().forEach(row => {
-        const ts = row[0];
-        fc.innerHTML += `
-          <div class="timeline-item">
-            <div class="timeline-card">
-              <button class="delete-btn" onclick="deleteEntry('${ts}')">Delete</button>
-              <div class="timeline-date">${new Date(ts).toLocaleString()}</div>
-              <div style="font-weight:bold;">${row[2]}</div>
-              <div style="font-size:13px; color:#666;">${row[1]} • ${"⭐".repeat(row[3])}</div>
-            </div>
+    // --- NEW: THE MISSING LIST PAINTERS ---
+    function renderRecipeList() {
+      const container = document.getElementById('recipeListContainer');
+      container.innerHTML = '<h3 class="list-header">Your Saved Recipes</h3>';
+      
+      if (allRecipes.length === 0) {
+        container.innerHTML += '<p style="text-align:center; color:#999;">No recipes found.</p>';
+        return;
+      }
+
+      allRecipes.slice().reverse().forEach(row => {
+        // We filter out empty steps to only show active ones
+        const steps = [row[4], row[5], row[6], row[7], row[8]].filter(s => s !== "" && s !== 0);
+        
+        container.innerHTML += `
+          <div class="feed-card">
+            <div class="feed-title">${row[1]}</div>
+            <span class="data-label">Equipment</span><div class="detail-text">${row[2]}</div>
+            <span class="data-label">Coffee Dose</span><div class="detail-text">${row[3]}g</div>
+            <span class="data-label">Phases</span><div class="detail-text">${steps.join('s | ')}s</div>
           </div>`;
       });
     }
 
+    function renderBeanList() {
+      const container = document.getElementById('pantryListContainer');
+      container.innerHTML = '<h3 class="list-header">Your Full Pantry</h3>';
+
+      if (allBeans.length === 0) {
+        container.innerHTML += '<p style="text-align:center; color:#999;">Pantry is empty.</p>';
+        return;
+      }
+
+      allBeans.slice().reverse().forEach(row => {
+        container.innerHTML += `
+          <div class="feed-card">
+            <div class="feed-title">${row[1]}</div>
+            <span class="data-label">Roaster</span><div class="detail-text">${row[2]}</div>
+            <span class="data-label">Roast Date</span><div class="detail-text">${new Date(row[3]).toLocaleDateString()}</div>
+          </div>`;
+      });
+    }
     // --- TIMER LOGIC (Flexible Arrays) ---
     function updateTimerSettings() {
       const idx = document.getElementById('activeRecipeDropdown').value;
